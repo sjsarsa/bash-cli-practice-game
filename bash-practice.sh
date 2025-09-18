@@ -77,6 +77,7 @@ mark_subtask_completed() {
 
 show_progress() {
   print_separator
+  local i
   if [[ -z "$CURRENT_TASK_ID" ]]; then
     echo "Task Progress:"
     for i in "${!TASKS[@]}"; do
@@ -317,6 +318,7 @@ is_task_completed() {
   4) subtasks=("${SUBTASKS_SCRIPTS[@]}") ;;
   esac
 
+  local i
   for i in "${!subtasks[@]}"; do
     sub_num=$((i + 1))
     line="#   SUBTASK ${sub_num}: ${subtasks[i]} [✔]"
@@ -333,6 +335,7 @@ is_task_completed() {
 main_menu() {
   print_separator
   echo "Choose a skill to practice:"
+  local i
   for i in "${!TASKS[@]}"; do
     task_num=$((i + 1))
     if is_task_completed "$task_num"; then
