@@ -412,7 +412,7 @@ while true; do
     main_menu
     ;;
   *)
-    eval "$command"
+    eval "$command" 2> >(sed -E "s|$0:\sline\s[0-9]+:\s||")
     check_task_completion
     ;;
   esac
