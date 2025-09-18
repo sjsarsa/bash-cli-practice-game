@@ -6,11 +6,11 @@ bind 'TAB:complete'
 # Progress Tracking (auto-updated by game)
 # ==============================================================================
 # TASK 1: Navigating the filesystem
-#   SUBTASK 1: go_to_subdir [✔]
-#   SUBTASK 2: find_file [✔]
-#   SUBTASK 3: return_to_root [✔]
+#   SUBTASK 1: go_to_subdir [ ]
+#   SUBTASK 2: find_file [ ]
+#   SUBTASK 3: return_to_root [ ]
 # TASK 2: Creating and deleting files and folders
-#   SUBTASK 1: create_empty_file [✔]
+#   SUBTASK 1: create_empty_file [ ]
 #   SUBTASK 2: create_dir_and_file [ ]
 #   SUBTASK 3: create_file_with_text [ ]
 # TASK 3: Modifying file and folder permissions
