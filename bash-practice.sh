@@ -4,31 +4,48 @@
 # Progress Tracking (auto-updated by game)
 # ======================================================================
 # SKILL 1: Navigating the filesystem
-#   TASK 1: working_dir [ ]
+#   TASK 1: print_working_dir [ ]
 #   TASK 2: go_to_subdir [ ]
-#   TASK 3: find_file [ ]
-#   TASK 4: return_to_root [ ]
+#   TASK 3: go_to_subdir2 [ ]
+#   TASK 4: to_parents [ ]
+#   TASK 5: return_home [ ]
+#   TASK 6: find_file [ ]
 # SKILL 2: Managing files and folders
-#   TASK 1: create_empty_file [ ]
-#   TASK 2: create_dir_and_file [ ]
+#   TASK 1: view_file_content [ ]
+#   TASK 2: create_empty_file [ ]
 #   TASK 3: create_file_with_text [ ]
-#   TASK 4: delete_file_and_dir [ ]
-#   TASK 5: delete_recursively [ ]  # add check that we are in the game dir
-#   TASK 6: copy_file [ ]
-#   TASK 8: move [ ]
-#   TASK 7: copy_recursively [ ]
-# SKILL 3: Modifying file and folder permissions
+#   TASK 4: create_dir [ ]
+#   TASK 5: create_dirs [ ]
+#   TASK 6: remove_file [ ]
+#   TASK 7: remove_recursively [ ]
+#   TASK 8: copy_file [ ]
+#   TASK 9: copy_recursively [ ]
+#   TASK 10: move [ ]
+# SKILL 3: Wildcards, pipes and redirects
+#   TASK 1: TODO
+# SKILL 4: Modifying file and folder permissions TODO
 #   TASK 1: make_executable [ ]
-#   TASK 2: set_owner_permissions [ ]
-# SKILL 4: Writing and executing simple scripts
+#   TASK 2: make_executables [ ]
+# SKILL 5: Writing and executing simple scripts TODO
 #   TASK 1: create_and_run_simple [ ]
 #   TASK 2: create_and_run_ls [ ]
 #   TASK 3: echo and redirect [ ]
-# SKILL 5: Using pipes
-#   TASK 2: pipes
-#   TASK 3: pipes
 
 # ======================================================================
+# Colors
+# ======================================================================
+BOLD_YELLOW="\e[1;33m"
+CYAN="\e[36m"
+DIM="\e[2m"
+RESET="\e[0m"
+
+yello_bold=$'\e[1;33m'
+cyan=$'\e[36m'
+green_bold=$'\e[1;32m'
+blue_bold=$'\e[1;34m'
+red=$'\e[31m'
+dim=$'\e[2m'
+reset=$'\e[0m'
 
 # ======================================================================
 # Global Variables
@@ -37,7 +54,7 @@ GAME_DIR=""
 SCRIPT_ABS_PATH=$(realpath "$0")
 CURRENT_SKILL_ID=""
 CURRENT_TASK_INDEX=-1
-GAME_PROMPT="[CMD_ADVENTURE] > "
+CURRENT_TASK_COMPLETED=0
 LATEST_COMMAND_OUTPUT=""
 
 # Randomized targets
@@ -52,13 +69,13 @@ declare -a SKILLS=(
 # Read dynamically from task definition comments below with grep
 task_lines=$(grep -E '^# SKILL [0-9]+ - (\w+\s*)+$' $SCRIPT_ABS_PATH)
 readarray -t SKILLS < <(echo "$task_lines" | sed -E 's|^# SKILL [0-9]+ - (.+)$|\1|')
-num_tasks=${#SKILLS[@]}
+num_skills=${#SKILLS[@]}
 
-for i in $(seq 1 "$num_tasks"); do
+for i in $(seq 1 "$num_skills"); do
   declare -a "SKILL_${i}_TASKS=()"
 done
 
-for i in $(seq 1 "$num_tasks"); do
+for i in $(seq 1 "$num_skills"); do
   # Read tasks for this task
   task_lines=$(grep -E "^# SKILL $i - TASK [0-9] - (.+)$" "$SCRIPT_ABS_PATH" | sed -E "s|^# SKILL $i - TASK [0-9] - (.+)$|\1|")
   while IFS= read -r line; do
@@ -66,30 +83,21 @@ for i in $(seq 1 "$num_tasks"); do
   done <<<"$task_lines"
 done
 
-# echo "Detected ${#SKILLS[@]} tasks from script comments."
-# echo "Skills:"
-# for i in "${!SKILLS[@]}"; do
-#   substarts_var="SKILL_$((i + 1))_TASKS[@]"
-#   echo "  $((i + 1)). ${SKILLS[$i]}"
-#   echo "    tasks:"
-#   echo "    ----------------"
-#   for task in "${!substarts_var}"; do
-#     echo "      - $task"
-#   done
-# done
-
 # ======================================================================
 # Utility / UI
 # ======================================================================
 print_separator() {
   echo ""
-  echo "=============================================================================="
+  # Use printf to repeat a character
+  printf '%0.s=' $(seq 1 "$PRINT_WIDTH")
+  echo ""
   echo ""
 }
 
 print_separator_thin() {
   echo ""
-  echo "------------------------------------------------------------------------------"
+  printf '%0.s-' $(seq 1 "$PRINT_WIDTH")
+  echo ""
   echo ""
 }
 
@@ -112,14 +120,14 @@ show_progress() {
       echo "$status ${SKILLS[$i]}"
     done
   else
-    echo "task Progress for ${SKILLS[$((CURRENT_SKILL_ID - 1))]}:"
+    echo "Task progress for ${SKILLS[$((CURRENT_SKILL_ID - 1))]}:"
     local tasks
     declare -n tasks="SKILL_${CURRENT_SKILL_ID}_TASKS"
     for i in "${!tasks[@]}"; do
       sub_num=$((i + 1))
       line="#   TASK ${sub_num}: ${tasks[i]} [✔]"
       if grep -qF "$line" "$SCRIPT_ABS_PATH"; then status="[✔]"; else status="[ ]"; fi
-      echo "$status ${tasks[i]}"
+      echo "$sub_num. $status ${tasks[i]}"
     done
   fi
   print_separator
@@ -176,6 +184,21 @@ outside_paths() {
 # ======================================================================
 setup_game() {
   clear
+  PRINT_WIDTH=$((COLUMNS < 80 ? COLUMNS : 80))
+
+  if [ "$DBG" == 1 ]; then
+    echo "DEBUG: Detected ${#SKILLS[@]} skills from script comments."
+    for i in "${!SKILLS[@]}"; do
+      substarts_var="SKILL_$((i + 1))_TASKS[@]"
+      echo "  $((i + 1)). ${SKILLS[$i]}"
+      echo "    tasks:"
+      echo "    ----------------"
+      for task in "${!substarts_var}"; do
+        echo "      - $task"
+      done
+    done
+  fi
+
   print_separator
   echo "Welcome to the Bash Command Line Interactive Practice! 🚀"
   echo ""
@@ -190,6 +213,7 @@ setup_game() {
   HISTFILESIZE=2000
 
   echo "Game environment created at: $GAME_DIR"
+  HOME="$GAME_DIR" # set home to game dir to avoid issues with ~
   cd "$GAME_DIR" || exit
 }
 
@@ -207,12 +231,6 @@ cleanup() {
 # Course-like Instructions
 # ==============================================================================
 
-# Colors
-BOLD_YELLOW="\e[1;33m"
-CYAN="\e[36m"
-DIM="\e[2m"
-RESET="\e[0m"
-
 prompt_enter_or_q() {
   echo -ne "Press Enter to continue or q to exit..."
   read -r -n 1 -s key
@@ -222,6 +240,21 @@ prompt_enter_or_q() {
   fi
   echo -e "\r\033[K"
   return 0
+}
+
+# shellcheck disable=SC2329
+prompt_y_or_n() {
+  echo -ne "$1 (y/n)? "
+  while true; do
+    read -r -n 1 -s key
+    if [[ "$key" == "y" || "$key" == "Y" ]]; then
+      echo -e "\r\033[K"
+      return 0
+    elif [[ "$key" == "n" || "$key" == "N" ]]; then
+      echo -e "\r\033[K"
+      return 1
+    fi
+  done
 }
 
 show_instructions() {
@@ -285,13 +318,15 @@ Special directory names:
       • Options can be combined, e.g., ${CYAN}ls -1a${RESET}.
 
   - ${BOLD_YELLOW}cd [dir]${RESET} (Change Directory): Moves you to another folder specified by the given argument.
+      • ${CYAN}cd${RESET} or ${CYAN}cd ~${RESET} moves you to your home directory.
+        ${DIM}(In this game, your home directory is the same as the game root)${RESET}
       • ${CYAN}cd ..${RESET} moves you up one level.
       • ${CYAN}cd ../..${RESET} moves you up two levels.
       • ${CYAN}cd /${RESET} takes you to the root directory.
-      • Just ${CYAN}cd${RESET} or ${CYAN}cd ~${RESET} moves you to your home directory.
-        ${DIM}(Don't try that within the game since you will exit the game root directory.
-        To come back, restart the task with ${CYAN}start 1${DIM}.${RESET})
 
+  - ${BOLD_YELLOW}find${RESET} (Find): Searches for files and directories in a directory hierarchy.
+      • Use ${CYAN}find . -name 'filename'${RESET} to search for a file named 'filename' starting from the current directory (${CYAN}.${RESET}).
+      • You can use wildcards, e.g., ${CYAN}find . -name '*.txt'${RESET} to find all text files.
   - ${BOLD_YELLOW}tree${RESET} (tree.com in Windows): Displays the directory structure in a tree-like format.
       • Great for getting a full overview.
       • ${DIM}NOTE: This command may not be installed by default on all systems.${RESET}
@@ -299,34 +334,67 @@ Special directory names:
           - On MacOS: ${CYAN}brew install tree${RESET}
           - On Windows Git Bash: not available, instead use Windows' ${CYAN}tree.com //f${RESET}
             (${CYAN}//f${RESET} shows files in the tree view).
-  "
+  " | fold -s -w "$PRINT_WIDTH"
     ;;
-  "2")
-    echo "Managing Files and Folders:
-You can create and manage files and directories directly from the command line.
-  - **mkdir** (Make Directory): Creates a new, empty folder. Use 'mkdir foldername'.
-  - **touch**: Creates a new, empty file. It's often used to update the timestamp of an existing file but works great for creating new ones.
-  - **echo >**: The 'echo' command prints text. The '>' symbol redirects that text into a file, creating it if it doesn't exist or overwriting it if it does.
-  - **rm** (Remove): Deletes files. Use 'rm filename'. Be careful, this is permanent!
-  - **rmdir**: Deletes empty directories."
+  "2") echo -e "
+Managing Files and Folders:
+
+Files are used to store data (like documents, logs or executable scripts and programs), while directories are used to organise files into a hierarchical structure.
+
+The command line lets you create, view, copy, move, and delete files or directories without much hassle.
+
+    " | fold -s -w "$PRINT_WIDTH"
+
+    prompt_enter_or_q || return
+
+    echo -e "Common commands for managing files and folders:
+  - ${BOLD_YELLOW}cat [file]${RESET} (Concatenate): Displays the contents of a file in the terminal.
+      • Example: ${CYAN}cat notes.txt${RESET}
+
+  - ${BOLD_YELLOW}touch [file]${RESET}: Creates a new, empty file. If the file already exists, its timestamp is updated.
+      • Example: ${CYAN}touch newfile.txt${RESET}
+
+  - ${BOLD_YELLOW}mkdir [dir]${RESET} (Make Directory): Creates a new, empty folder.
+      • Example: ${CYAN}mkdir projects${RESET}
+
+  - ${BOLD_YELLOW}echo 'text' > [file]${RESET}: Writes text into a file. If the file exists, its contents are overwritten.
+      • Example: ${CYAN}echo 'Hello World' > hello.txt${RESET}
+      • Use ${CYAN}>>${RESET} instead of ${CYAN}>${RESET} to append without overwriting.
+  - ${BOLD_YELLOW}cp [src] [dest]${RESET} (Copy): Duplicates files or directories.
+      • Example (file): ${CYAN}cp file.txt backup.txt${RESET}
+      • Example (directory): ${CYAN}cp -r src_dir backup_dir${RESET}
+        ${DIM}(The ${CYAN}-r${RESET} option copies directories recursively)${RESET}
+
+  - ${BOLD_YELLOW}mv [src] [dest]${RESET} (Move): Moves or renames files and directories.
+      • Example (rename): ${CYAN}mv oldname.txt newname.txt${RESET}
+      • Example (move): ${CYAN}mv file.txt ~/docs/${RESET}
+
+  - ${BOLD_YELLOW}rm [file]${RESET} (Remove): Deletes files permanently.
+      • Example: ${CYAN}rm oldfile.txt${RESET}
+      • Example (directory): ${CYAN}rm -r foldername${RESET}
+        ${RED}${BOLD}Warning:${RESET} ${DIM}There is no recycle bin with rm — once deleted, files are gone!${RESET}
+
+    " | fold -s -w "$PRINT_WIDTH"
     ;;
-  "3")
-    echo "Modifying File and Folder Permissions:
-Every file and folder has permissions that control who can read, write, or execute it. This is crucial for security.
-  - **chmod** (Change Mode): Changes file permissions. Permissions are represented in a three-digit octal number (e.g., 755).
-    - The first digit is for the **owner**.
-    - The second is for the **group**.
-    - The third is for **others**.
-    Each digit is a sum of: **4** (read), **2** (write), and **1** (execute). For example, 7 means '4+2+1' (read, write, execute).
-    'chmod +x filename' is a quick way to add execute permissions for everyone."
-    ;;
-  "4")
-    echo "Writing and Executing Simple Scripts:
-A shell script is a file containing a series of commands. They're used to automate repetitive tasks.
-  - **Creating a script**: Use 'echo >' or a text editor to write commands into a file.
-  - **Making it executable**: You must give a script execute permissions using 'chmod +x scriptname.sh'.
-  - **Running a script**: To run an executable script, you need to specify its path. If it's in the current directory, use './scriptname.sh'."
-    ;;
+#   "3")
+#     echo "Modifying File and Folder Permissions:
+# Every file and folder has permissions that control who can read, write, or execute it. This is crucial for security.
+#   - **chmod** (Change Mode): Changes file permissions. Permissions are represented in a three-digit octal number (e.g., 755).
+#     - The first digit is for the **owner**.
+#     - The second is for the **group**.
+#     - The third is for **others**.
+#     Each digit is a sum of: **4** (read), **2** (write), and **1** (execute). For example, 7 means '4+2+1' (read, write, execute).
+#     'chmod +x filename' is a quick way to add execute permissions for everyone.
+#   - **chown** (Change Owner): Changes the owner of a file or directory. Use 'chown newowner filename'. You might need admin/superuser privileges (sudo) to change ownership.
+#     "
+#     ;;
+#   "4")
+#     echo "Writing and Executing Simple Scripts:
+# A shell script is a file containing a series of commands. They're used to automate repetitive tasks.
+#   - **Creating a script**: Use 'echo >' or a text editor to write commands into a file.
+#   - **Making it executable**: You must give a script execute permissions using 'chmod +x scriptname.sh'.
+#   - **Running a script**: To run an executable script, you need to specify its path. If it's in the current directory, use './scriptname.sh'."
+#     ;;
   esac
   print_separator
 }
@@ -366,20 +434,19 @@ run_current_task() {
     return
   fi
   clear
-  show_progress
-  echo "General task commands:"
-  echo "  info       - Show general instructions for the skill to practice"
-  echo "  skip       - Skip this task and move to the next"
-  echo "  task-info  - Re-run the task explanation/setup"
-  echo "  main-menu  - Quit the current task and return to main menu"
-  echo "  quit       - Exit the game"
-  print_separator_thin
-  echo "task: $name"
+  print_separator
+  echo "Task $name ($((CURRENT_TASK_INDEX + 1)) of $(get_task_count_for_task "$CURRENT_SKILL_ID") for '${SKILLS[$((CURRENT_SKILL_ID - 1))]}'):"
+  echo ""
+
   # ensure we are in game dir
   cd "$GAME_DIR" || exit
+
   "setup_$name"
   "explain_$name"
   echo "(When you're ready, run shell commands to complete the task.)"
+  print_separator_thin
+  echo "Enter the command 'help' to see all game commands."
+  print_separator
   echo ""
 }
 
@@ -395,26 +462,27 @@ check_current_task() {
   if "check_$name"; then
     # mark in script
     mark_task_completed "$CURRENT_SKILL_ID" $((CURRENT_TASK_INDEX + 1))
+    CURRENT_TASK_COMPLETED=1
+
+    print_separator
     echo "🎉 task '$name' completed!"
+    show_progress
 
     # prompt for enter to continue
-    read -rp "Press Enter to continue..."
-    echo "---"
 
     # advance to next task
     local total
     total=$(get_task_count_for_task "$CURRENT_SKILL_ID")
-    CURRENT_TASK_INDEX=$((CURRENT_TASK_INDEX + 1))
-    if [[ "$CURRENT_TASK_INDEX" -lt "$total" ]]; then
+    if [[ $((CURRENT_TASK_INDEX + 1)) -lt "$total" ]]; then
       # prepare next task
       cd "$GAME_DIR" || exit
-      run_current_task
+      echo "You may now enter the command 'next' to continue to the next task."
     else
-      echo "All tasks for '${SKILLS[$((CURRENT_SKILL_ID - 1))]}' completed!"
-      CURRENT_SKILL_ID=""
-      CURRENT_TASK_INDEX=-1
-      main_menu
+      echo "This was the final task for '${SKILLS[$((CURRENT_SKILL_ID - 1))]}'!"
+      echo "You may now enter the command 'next' to return to the main menu."
     fi
+
+    print_separator
   fi
 }
 
@@ -422,14 +490,13 @@ check_current_task() {
 # shellcheck disable=SC2329
 make_haystack() {
   local HAYSTACK_DIR=${1:-"./haystack"} # default dir unless provided
-  local NUM_TOP_DIRS=${2:-20}           # default top-level dirs
-  local MAX_DEPTH=${3:-5}               # max depth
-  local FILES_PER_DIR=${4:-5}           # files per dir
+  local NUM_TOP_DIRS=${2:-7}            # default top-level dirs
+  local MAX_DEPTH=${3:-4}               # max depth
+  local FILES_PER_DIR=${4:-3}           # files per dir
 
   # Start fresh
   rm -rf "$HAYSTACK_DIR"
   mkdir -p "$HAYSTACK_DIR"
-  echo "Building randomized haystack in $HAYSTACK_DIR ..."
 
   # Recursive helper function
   create_random_tree() {
@@ -463,10 +530,25 @@ make_haystack() {
     create_random_tree "$DIR" 1
   done
 
-  # Plant a "needle" files at random depths
+  # Plant a "needle" file at random depth
   local NEEDLE_DIR
-  NEEDLE_DIR="$HAYSTACK_DIR/dir$(shuf -i 1-$NUM_TOP_DIRS -n 1)/$(find "$HAYSTACK_DIR/dir$(shuf -i 1-$NUM_TOP_DIRS -n 1)" -type d | shuf -n 1)"
+  NEEDLE_DIR="$HAYSTACK_DIR/dir$((RANDOM % NUM_TOP_DIRS + 1))"
+  for i in $(seq 1 $((RANDOM % (MAX_DEPTH - 1) + 1))); do
+    SUBDIRS=("$NEEDLE_DIR"/*/)
+    # if * in SUBDIRS is not expanded, there are no subdirs
+    # create one and break
+    if [ "${SUBDIRS[0]}" == "$NEEDLE_DIR/*/" ]; then
+      NEEDLE_DIR="$NEEDLE_DIR/subdir$(tr -dc 'a-z0-9' </dev/urandom | head -c 3)"
+      break
+    fi
+
+    if [ ${#SUBDIRS[@]} -eq 0 ]; then break; fi
+    NEEDLE_DIR="${SUBDIRS[RANDOM % ${#SUBDIRS[@]}]}"
+  done
+
+  mkdir -p "$NEEDLE_DIR"
   echo "SECRET_PASSWORD=opensesame" >"$NEEDLE_DIR/needle.txt"
+  echo "${NEEDLE_DIR}" # return path to the needle file's directory
 }
 
 # ======================================================================
@@ -480,28 +562,27 @@ make_haystack() {
 ##############################################
 
 # ============================================
-# SKILL 1 - TASK 1 - working_dir
+# SKILL 1 - TASK 1 - print_working_dir
 # ============================================
 # shellcheck disable=SC2329
-setup_working_dir() {
+setup_print_working_dir() {
   random_suffix=$(shuf -i 100-999 -n 1)
   random_suffix2=$(shuf -i 100-999 -n 1)
-  TARGET_DIRS[working_dir]="data_$random_suffix/users/user$random_suffix2"
+  TARGET_DIRS[print_working_dir]="data_$random_suffix/users/user$random_suffix2"
 
-  mkdir -p "$GAME_DIR/${TARGET_DIRS[working_dir]}"
-  cd "$GAME_DIR/${TARGET_DIRS[working_dir]}" || exit
+  mkdir -p "$GAME_DIR/${TARGET_DIRS[print_working_dir]}"
+  cd "$GAME_DIR/${TARGET_DIRS[print_working_dir]}" || exit
 }
 
 # shellcheck disable=SC2329
-explain_working_dir() {
+explain_print_working_dir() {
   echo "You are in the game root directory.
-Enter the command that shows the directory you are currently in (hint: try
-entering the command 'info')."
+Enter the command that shows the full path of the directory you are currently in (hint: try entering the command 'info')." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
-check_working_dir() {
-  [[ "$LATEST_COMMAND_OUTPUT" == "$GAME_DIR/${TARGET_DIRS[working_dir]}" ]]
+check_print_working_dir() {
+  [[ "$LATEST_COMMAND_OUTPUT" == "$GAME_DIR/${TARGET_DIRS[print_working_dir]}" ]]
 }
 
 # ============================================
@@ -516,7 +597,7 @@ setup_go_to_subdir() {
 # shellcheck disable=SC2329
 explain_go_to_subdir() {
   echo "Go into the directory '${TARGET_DIRS[go_to_subdir]}' (use cd).
-The directory was created under the game root."
+The directory was created under the game root." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
@@ -525,71 +606,226 @@ check_go_to_subdir() {
 }
 
 # ============================================
-# SKILL 1 - TASK 3 - find_file
+# SKILL 1 - TASK 3 - go_to_subdir2
 # ============================================
 # shellcheck disable=SC2329
-setup_find_file() {
-  TARGET_DIRS[find_file]="data_$(shuf -i 100-999 -n 1)"
-  mkdir -p "${TARGET_DIRS[find_file]}/docs/archive"
-  TARGET_FILES[find_file]="secret_file.txt"
-  touch "${TARGET_DIRS[find_file]}/docs/archive/${TARGET_FILES[find_file]}"
+setup_go_to_subdir2() {
+  local i
+  local subdir
+  for i in $(seq 1 3); do
+    subdir="data_$(shuf -i 100-999 -n 1)/docs"
+    mkdir -p "$subdir"
+    echo "nothing to see here..." >"$subdir/some_boring_data.txt"
+  done
+
+  TARGET_DIRS[go_to_subdir2]="data_$(shuf -i 100-999 -n 1)/docs/archive"
+  mkdir -p "${TARGET_DIRS[go_to_subdir2]}"
+  mkdir -p "${TARGET_DIRS[go_to_subdir2]}"
 }
 
 # shellcheck disable=SC2329
-explain_find_file() {
-  echo "A file named '${TARGET_FILES[find_file]}' is placed inside '${TARGET_DIRS[find_file]}/docs/archive'.
-Find and cd into the directory containing it."
+explain_go_to_subdir2() {
+  echo "A new directory '${TARGET_DIRS[go_to_subdir2]}' has been created.
+Tip: You can do this with a single 'cd' command.
+Another tip: You can use tab completion for each subdirectory to easily construct a correct path argument for cd." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
-check_find_file() {
-  local expected_dir="$GAME_DIR/${TARGET_DIRS[find_file]}/docs/archive"
-  [[ "$PWD" == "$expected_dir" && -f "${TARGET_FILES[find_file]}" ]]
+check_go_to_subdir2() {
+  local expected_dir="$GAME_DIR/${TARGET_DIRS[go_to_subdir2]}"
+  [[ "$PWD" == "$expected_dir" ]]
 }
 
 # ============================================
-# SKILL 1 - TASK 4 - return_to_root
+# SKILL 1 - TASK 4 - to_parents
 # ============================================
 # shellcheck disable=SC2329
-setup_return_to_root() {
-  TARGET_DIRS[return_to_root]="data_$(shuf -i 100-999 -n 1)"
-  mkdir -p "${TARGET_DIRS[return_to_root]}/docs/archive"
-  cd "${TARGET_DIRS[return_to_root]}/docs/archive" || exit
+setup_to_parents() {
+  TARGET_DIRS[to_parents]="data_$(shuf -i 100-999 -n 1)"
+  mkdir -p "${TARGET_DIRS[to_parents]}/docs/archive/subarchive"
+  cd "${TARGET_DIRS[to_parents]}/docs/archive/subarchive" || exit
 }
 
 # shellcheck disable=SC2329
-explain_return_to_root() {
-  echo "You are now deep inside a directory tree. Return to the game root directory ($GAME_DIR)."
+explain_to_parents() {
+  echo "You are now deep inside a directory tree. Go back two levels until you reach the 'docs' directory. Tip: Use '..' with cd to go up one level." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
-check_return_to_root() {
+check_to_parents() {
+  [[ "$PWD" == "$GAME_DIR/${TARGET_DIRS[to_parents]}/docs" ]]
+}
+
+# ============================================
+# SKILL 1 - TASK 5 - return_home
+# ============================================
+# shellcheck disable=SC2329
+setup_return_home() {
+  TARGET_DIRS[return_home]="data_$(shuf -i 100-999 -n 1)/docs/subarchive/some/shady/deeply/nested/directory"
+  mkdir -p "${TARGET_DIRS[return_home]}"
+  cd "${TARGET_DIRS[return_home]}" || exit
+}
+
+# shellcheck disable=SC2329
+explain_return_home() {
+  echo "You are now even deeper inside a directory tree. Return to your home directory (the game root).
+  Tip: This can be done extremely easily, check the 'cd' instructions with the 'info' command or try 'cd --help' (most commands provide info on how to use it when provided the option '--help')." | fold -s -w "$PRINT_WIDTH"
+}
+
+# shellcheck disable=SC2329
+check_return_home() {
   [[ "$PWD" == "$GAME_DIR" ]]
 }
 
 # ============================================
-# SKILL 1 - TASK 5 - find_file2
+# SKILL 1 - TASK 5 - find_file
 # ============================================
 # shellcheck disable=SC2329
-setup_find_file2() {
-  TARGET_DIRS[find_file2]=$(make_haystack "$GAME_DIR/haystack_$(shuf -i 100-999 -n 1)")
+setup_find_file() {
+  rm -rf "$GAME_DIR/haystack"
+  TARGET_DIRS[find_file]=$(make_haystack "$GAME_DIR/haystack")
 }
 
 # shellcheck disable=SC2329
-explain_find_file2() {
-  echo "A file named 'needle.txt' has been hidden somewhere inside the directory tree '$GAME_DIR/haystack_xxx' (where xxx is a random number).
-Navigate to the directory containing the file. Hint: Use the 'find' command to locate it."
+explain_find_file() {
+  echo "A file named 'needle.txt' has been hidden somewhere inside the directory 'haystack'.
+Navigate to the directory containing the file.
+
+Tip: Use 'find -name <filename>' to locate it. " | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
-check_find_file2() {
+check_find_file() {
   local expected_file="needle.txt"
-  [[ "$PWD" == *"${TARGET_DIRS[find_file2]}"* && -f "$expected_file" ]]
+  [[ "$PWD" == "${TARGET_DIRS[find_file]%/}" && -f "$expected_file" ]]
 }
 
 ##############################################
 # SKILL 2 - Managing files and folders
 ##############################################
+
+# ============================================
+# SKILL 2 - TASK 3 - view_file_content
+# ============================================
+# shellcheck disable=SC2329
+setup_view_file_content() {
+  TARGET_FILES[view_file_content]="cat-info.txt"
+  echo "
+  /\\_/\\
+=( >.< )=
+ /     \\
+
+The cat command is short for 'concatenate'.
+It reads files sequentially, writing them to standard output.
+
+For example: cat file1.txt file2.txt
+
+It is also the standard way to view the full contents of a file in the terminal.
+
+Bonus:
+  'less' is a pager program that allows you to view (but not change) the contents of a file one screen at a time. It is often much more convenient than cat for long files.
+  Try 'less many-cats.txt' to see it in action.
+" >"${TARGET_FILES[view_file_content]}"
+
+  # long file with many cat ascii arts
+  cat <<EOF >"many-cats.txt"
+A few cat ASCII arts (source: https://www.asciiart.eu/animals/cats)
+
+ /\_/\\
+( o.o )
+ > ^ <
+
+           __..--''\`\`---....___   _..._    __
+ /// //_.-'    .-/";  \`        \`\`<._  \`\`.''_ \`. / // /
+///_.-' _..--.'_    \                    \`( ) ) // //
+/ (_..-' // (< _     ;_..__               ; \`' / ///
+ / // // //  \`-._,_)' // / \`\`--...____..-' /// / //
+
+   |\---/|
+   | ,_, |
+    \_\`_/-..----.
+ ___/ \`   ' ,""+ \  sk
+(__...'   __\    |\`.___.';
+  (_,...'(_,.\`__)/'.....+
+
+  ,-.       _,---._ __  / \\
+ /  )    .-'       \`./ /   \\
+(  (   ,'            \`/    /|
+ \  \`-"             \'\   / |
+  \`.              ,  \ \ /  |
+   /\`.          ,'-\`----Y   |
+  (            ;        |   '
+  |  ,-.    ,-'         |  /
+  |  | (   |        hjw | /
+  )  |  \  \`.___________|/
+  \`--'   \`--'
+
+                      (\`.-,')
+                    .-'     ;
+                _.-'   , \`,-
+          _ _.-'     .'  /._
+        .' \`  _.-.  /  ,'._;)
+       (       .  )-| (
+        )\`,_ ,'_,'  \_;)
+('_  _,'.'  (___,))
+ \`-:;.-'
+
+
+  /\_/\  (
+ ( ^.^ ) _)
+   \"/  (
+ ( | | )
+(__d b__)
+
+
+    /\_____/\
+   /  o   o  \
+  ( ==  ^  == )
+   )         (
+  (           )
+ ( (  )   (  ) )
+(__(__)___(__)__)
+
+
+  ^___^
+ " o o "
+ ===X===       _
+  ' " '_     __\\\\
+ /''''  \___/ __/
+|           /
+("|")__\   |
+"" ""(_____/
+
+    |\__/,|   (\`\\
+  _.|o o  |_   ) )
+-(((---(((--------
+
+
+ _._     _,-'""\`-._
+(,-.\`._,'(       |\\\`-/|
+    \`-.-' \\ )-\`( , o o)
+          \`-    \\\`_\`"'-
+
+ |\__/,|   (\`\\
+ |_ _  |.--.) )
+ ( T   )     /
+(((^_(((/(((_/
+
+EOF
+
+}
+
+# shellcheck disable=SC2329
+explain_view_file_content() {
+  echo "View the contents of the file '${TARGET_FILES[view_file_content]}' in the current directory.
+Hint: Use the 'cat' command."
+}
+
+# shellcheck disable=SC2329
+check_view_file_content() {
+  # check if latest command output contains the expected text and is cat based on history
+  [[ "$LATEST_COMMAND_OUTPUT" == *"The cat command is short for 'concatenate'."* ]] && [[ "$(history | tail -n 1)" =~ cat[[:space:]]+${TARGET_FILES[cat]} ]]
+}
 
 # ============================================
 # SKILL 2 - TASK 1 - create_empty_file
@@ -601,12 +837,13 @@ setup_create_empty_file() {
 
 # shellcheck disable=SC2329
 explain_create_empty_file() {
-  echo "Create an empty file named '${TARGET_FILES[create_empty_file]}' in the game root."
+  echo "Create an empty file named '${TARGET_FILES[create_empty_file]}' in the game root. You can do this with the command 'touch'.
+  Afterwards, verify that the file was created with ls." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
 check_create_empty_file() {
-  [[ -f "$GAME_DIR/${TARGET_FILES[create_empty_file]}" ]]
+  [[ -f "$GAME_DIR/${TARGET_FILES[create_empty_file]}" ]] && [[ ! -s "$GAME_DIR/${TARGET_FILES[create_empty_file]}" ]] && [[ "$(history | tail -n 1)" =~ ls ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"${TARGET_FILES[create_empty_file]}"* ]]
 }
 
 # ============================================
@@ -619,65 +856,84 @@ setup_create_file_with_text() {
 
 # shellcheck disable=SC2329
 explain_create_file_with_text() {
-  echo "Create '${TARGET_FILES[create_file_with_text]}' in the current directory containing the text: Hello my file!.
-Tip: Use echo with redirection (>) or open a text editor with the filename as an argument."
+  echo "Create a new file '${TARGET_FILES[create_file_with_text]}' in the current directory containing the text: Hello my file!.
+
+Once created, verify that the file contains the correct text with 'cat'.
+
+Tip: Use one of:
+  - (1) echo with redirection ('> filename')
+  - (3) start a command line text editor with the filename as an argument, e.g. 'nano filename' or 'vim filename'
+  - (2) create an empty file and open it with the system's default text editor ('open filename' on Linux/Mac, 'start filename' on Windows) — may not be available in all environments (e.g. servers).
+    " | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
 check_create_file_with_text() {
-  [[ -f "$GAME_DIR/${TARGET_FILES[create_file_with_text]}" && "$(cat "$GAME_DIR/${TARGET_FILES[create_file_with_text]}")" == "Hello my file!" ]]
+  [[ -f "$GAME_DIR/${TARGET_FILES[create_file_with_text]}" && "$(cat "$GAME_DIR/${TARGET_FILES[create_file_with_text]}")" == "Hello my file!" ]] && [[ "$(history | tail -n 1)" =~ cat ]] && [[ ${LATEST_COMMAND_OUTPUT} == "Hello my file!" ]]
 }
 
 # ============================================
-# SKILL 2 - TASK 3 - view_file_content
+# SKILL 2 - TASK 4 - create_dir
 # ============================================
 # shellcheck disable=SC2329
-setup_view_file_content() {
-  TARGET_FILES[create_empty_file]="report_$(shuf -i 100-999 -n 1).txt"
+setup_create_dir() {
+  TARGET_DIRS[create_dir]="project_$(shuf -i 100-999 -n 1)"
 }
 
 # shellcheck disable=SC2329
-explain_view_file_content() {
-  echo "View the contents of the file '${TARGET_FILES[create_empty_file]}' in the game root.
-Hint: Use the 'cat' command."
+explain_create_dir() {
+  echo "Create a new directory '${TARGET_DIRS[create_dir]}'.
+
+Once created, verify that the directory was created with ls.
+
+Tip: Use the 'mkdir' command." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
-check_view_file_content() {
-  [[ -f "$GAME_DIR/${TARGET_FILES[create_empty_file]}" ]]
-}
-
-# ============================================
-# SKILL 2 - TASK 4 - create_dir_and_file
-# ============================================
-# shellcheck disable=SC2329
-setup_create_dir_and_file() {
-  TARGET_DIRS[create_dir_and_file]="project_$(shuf -i 100-999 -n 1)"
-  TARGET_FILES[create_dir_and_file]="notes.txt"
-}
-
-# shellcheck disable=SC2329
-explain_create_dir_and_file() {
-  echo "Create directory '${TARGET_DIRS[create_dir_and_file]}' in the game root and a file named 'notes.txt' inside it."
-}
-
-# shellcheck disable=SC2329
-check_create_dir_and_file() {
-  [[ -f "$GAME_DIR/${TARGET_DIRS[create_dir_and_file]}/${TARGET_FILES[create_dir_and_file]}" ]]
+check_create_dir() {
+  [[ -d "$GAME_DIR/${TARGET_DIRS[create_dir]}" ]] && [[ "$(history | tail -n 1)" =~ ls ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"${TARGET_DIRS[create_dir]}"* ]]
 }
 
 # ============================================
-# SKILL 2 - TASK 5 - remove_file
+# SKILL 2 - TASK 5 - create_dirs
+# ============================================
+# shellcheck disable=SC2329
+setup_create_dirs() {
+  TARGET_DIRS[create_dirs]="project_$(shuf -i 100-999 -n 1)/tests/integration"
+}
+
+# shellcheck disable=SC2329
+explain_create_dirs() {
+  echo "Create a new directory '${TARGET_DIRS[create_dirs]}'
+
+After this is done, verify it exists with 'find -name integration'.
+
+Tip: You can create multiple nested directories in one command with the '-p' option of 'mkdir': 'mkdir -p <path>'." | fold -s -w "$PRINT_WIDTH"
+}
+
+# shellcheck disable=SC2329
+check_create_dirs() {
+  [[ -d "$GAME_DIR/${TARGET_DIRS[create_dirs]}" ]] && [[ "$(history | tail -n 1)" =~ find[[:space:]]+-name[[:space:]]+integration ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]
+}
+
+# ============================================
+# SKILL 2 - TASK 6 - remove_file
 # ============================================
 # shellcheck disable=SC2329
 setup_remove_file() {
   TARGET_DIRS[remove_file]="project_$(shuf -i 100-999 -n 1)"
   TARGET_FILES[remove_file]="notes.txt"
+  mkdir -p "${TARGET_DIRS[remove_file]}"
+  echo "These are some notes..." >"${TARGET_DIRS[remove_file]}/${TARGET_FILES[remove_file]}"
 }
 
 # shellcheck disable=SC2329
 explain_remove_file() {
-  echo "Delete the file '${TARGET_DIRS[remove_file]}/${TARGET_FILES[remove_file]}' without deleting the directory."
+  echo "Delete the file '${TARGET_DIRS[remove_file]}/${TARGET_FILES[remove_file]}'. The directory should remain.
+
+Tip: Use the 'rm' command
+
+When not in the practice game, remember to be cautious with 'rm' — it deletes files permanently!." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
@@ -685,8 +941,66 @@ check_remove_file() {
   [[ ! -f "$GAME_DIR/${TARGET_DIRS[remove_file]}/${TARGET_FILES[remove_file]}" && -d "$GAME_DIR/${TARGET_DIRS[remove_file]}" ]]
 }
 
+# ============================================
+# SKILL 2 - TASK 7 - remove_recursively
+# ============================================
+# shellcheck disable=SC2329
+setup_remove_recursively() {
+  TARGET_DIRS[remove_recursively]="old_project_$(shuf -i 100-999 -n 1)"
+  mkdir -p "${TARGET_DIRS[remove_recursively]}/docs"
+  echo "Some old documentation..." >"${TARGET_DIRS[remove_recursively]}/docs/readme.txt"
+}
+
+# shellcheck disable=SC2329
+explain_remove_recursively() {
+  echo "Delete the entire directory '${TARGET_DIRS[remove_recursively]}' and its contents.
+
+Tip: 'rm' can't remove directories by default. Use the 'rm' command with the '-r' option to recursively delete a directory and all its contents.
+
+When not in the practice game, remember to be cautious with 'rm' — it deletes files permanently!" | fold -s -w "$PRINT_WIDTH"
+}
+
+# shellcheck disable=SC2329
+check_remove_recursively() {
+  [[ ! -d "$GAME_DIR/${TARGET_DIRS[remove_recursively]}" ]]
+}
+
 ##############################################
-# SKILL 3 - Permissions
+# SKILL 2 - TASK 8 - copy_file
+##############################################
+
+# shellcheck disable=SC2329
+setup_copy_file() {
+  TARGET_DIRS[copy_file]="project_$(shuf -i 100-999 -n 1)"
+  TARGET_FILES[copy_file_source]="report.txt"
+  TARGET_FILES[copy_file_dest]="report_backup.txt"
+  mkdir -p "${TARGET_DIRS[copy_file]}"
+  echo "This is a report, yes." >"${TARGET_DIRS[copy_file]}/${TARGET_FILES[copy_file_source]}"
+}
+
+# shellcheck disable=SC2329
+explain_copy_file() {
+  echo "
+The directory '${TARGET_DIRS[copy_file]}' contains a file named '${TARGET_FILES[copy_file_source]}' with the contents: This is a report, yes.
+
+Create a copy of the file '${TARGET_FILES[copy_file_source]}' in '${TARGET_FILES[copy_file_dest]}' inside the same directory ${TARGET_DIRS[return_home]}.
+
+Once done, verify that both files exist with 'ls'.
+If you want to be extra sure, you can check the contents of both files with 'cat'.
+
+Tip: Use the 'cp' command." | fold -s -w "$PRINT_WIDTH"
+}
+
+# shellcheck disable=SC2329
+check_copy_file() {
+  local expected_dir="$GAME_DIR/${TARGET_DIRS[copy_file]}"
+  local source_path="$expected_dir/${TARGET_FILES[copy_file_source]}"
+  local dest_path="$expected_dir/${TARGET_FILES[copy_file_dest]}"
+  [[ -f "$source_path" && -f "$dest_path" ]] && diff "$source_path" "$dest_path" >/dev/null && [[ "$(history | tail -n 1)" =~ ls ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"${TARGET_FILES[copy_file_source]}"* && ${LATEST_COMMAND_OUTPUT} == *"${TARGET_FILES[copy_file_dest]}"* ]]
+}
+
+##############################################
+# TODO: SKILL 3 - Permissions
 ##############################################
 
 # ============================================
@@ -735,7 +1049,7 @@ check_set_owner_permissions() {
 }
 
 ##############################################
-# SKILL 4 - Scripts
+# TODO: SKILL 4 - Scripts
 ##############################################
 
 # ============================================
@@ -792,7 +1106,7 @@ main_menu() {
   echo "Type '<skill_number>', e.g. '1' to begin practicing a skill."
   echo "Type 'info' to see general instructions."
   echo "Type 'help' to see all game commands."
-  echo "Type 'quit' to exit the game."
+  echo "Type 'exit' to exit the game."
   echo ""
   echo "Press Enter to execute the typed command."
   print_separator
@@ -801,36 +1115,74 @@ main_menu() {
 help() {
   echo "Available commands:"
   echo "  <number>        - Start practicing a skill (1-$task_num) (only in main menu)"
-  echo "  info [<number>] - Show skill instructions (1-$task_num) or general command line instructions (0)
-                    if no number is given, shows instructions for current skill to practice"
+  echo "  info [<number>] - Show skill instructions (1-$task_num) or general command line
+                    instructions (0) if no number is given"
   echo "  progress        - Show current progress"
   echo "  main-menu       - Go to main menu (will abandon current task if active)"
   echo "  help            - Show this help message"
-  echo "  quit            - Exit the game"
+  echo "  exit            - Exit the game"
   echo ""
-  echo "In addition while completing a task:"
-  echo "  skip            - Skip the current task"
+  echo "Only while a task is active:"
   echo "  task-info       - Show the explanation that was shown when starting the task"
+  echo "  begin-task <task-number> - Start a specific task within the current skill. Can be used to skip or repeat tasks."
+  if [[ "$CURRENT_TASK_COMPLETED" -eq 1 ]]; then
+    echo "  next            - Proceed to the next task (if any) or return to main menu"
+  fi
   print_separator_thin
+}
+
+trap ctrl_c INT
+
+# shellcheck disable=SC2329
+function ctrl_c() {
+  if prompt_y_or_n "Do you really want to exit the game"; then
+    exit 0
+  else
+    # print game prompt again
+    # TODO: fix cursor position
+    printf "%s" "$(game_prompt)"
+  fi
 }
 
 trap cleanup EXIT
 setup_game
 main_menu
 
+game_prompt() {
+  local base_prompt relpath
+  if [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 ]]; then
+    base_prompt="task $(get_current_task_name "$CURRENT_SKILL_ID" "$CURRENT_TASK_INDEX")"
+  else
+    base_prompt="bash-practice (main menu)"
+  fi
+  relpath=$(realpath --relative-to="$GAME_DIR" "$PWD")
+  if [[ "$relpath" == "." ]]; then
+    relpath="~"
+  else
+    # shellcheck disable=SC2088
+    relpath="~/$relpath"
+  fi
+  echo -n "$green_bold$base_prompt$reset:$blue_bold$relpath$reset\$ "
+}
+
 while true; do
+  # Update print width in case terminal was resized
+  PRINT_WIDTH=$((COLUMNS < 80 ? COLUMNS : 80))
 
   # Prepare autocompletion for commands with dummy files
-  commands="info progress main-menu help quit"
-  task_commands="skip task-info"
+  commands="info progress main-menu help exit"
+  task_commands="begin-task task-info"
+  [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 && "$CURRENT_TASK_COMPLETED" -eq 1 ]] && task_commands="$task_commands next"
   touch $commands
   [[ -n "$CURRENT_SKILL_ID" ]] && touch $task_commands
 
   # printf "%s" "$GAME_PROMPT"
-  read -e -r -p "$GAME_PROMPT" command
+  read -e -p "$(game_prompt)" command
 
+  history -s "$command"
+  history -a
   case "$command" in
-  quit | exit)
+  exit)
     break
     ;;
   help)
@@ -839,7 +1191,7 @@ while true; do
   progress)
     show_progress
     ;;
-  info\ [1-4])
+  info\ [1-$num_skills])
     if [[ "$command" =~ ^info[[:space:]]+([1-4])$ ]]; then
       skill_id="${BASH_REMATCH[1]}"
       show_instructions "$skill_id"
@@ -854,31 +1206,60 @@ while true; do
   info)
     if [[ -z "$CURRENT_SKILL_ID" ]]; then show_instructions "0"; else show_instructions "$CURRENT_SKILL_ID"; fi
     ;;
-  [1-4])
+  [1-$num_skills])
+    if [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 ]]; then
+      if ! prompt_y_or_n "You are currently in a task. Do you want to abandon it and return to the main menu"; then
+        continue
+      else
+        CURRENT_SKILL_ID=""
+        CURRENT_TASK_INDEX=-1
+        clear
+        main_menu
+        continue
+      fi
+    fi
     if [[ "$command" =~ ^[1-4]$ ]]; then
       CURRENT_SKILL_ID="$command"
       CURRENT_TASK_INDEX=0
       cd "$GAME_DIR" || exit
       run_current_task
     else
-      echo "Invalid task number. Choose 1-4."
+      echo "Invalid number. Choose 1-$num_skills."
     fi
     ;;
-  skip)
-    if [[ -n "$CURRENT_SKILL_ID" ]]; then
-      total=$(get_task_count_for_task "$CURRENT_SKILL_ID")
-      CURRENT_TASK_INDEX=$((CURRENT_TASK_INDEX + 1))
-      if [[ "$CURRENT_TASK_INDEX" -lt "$total" ]]; then
-        run_current_task
+  begin-task\ [0-9]*)
+    if [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 ]]; then
+      if [[ "$command" =~ ^begin-task[[:space:]]+([0-9]+)$ ]]; then
+        skip_to="$((BASH_REMATCH[1] - 1))"
+        total=$(get_task_count_for_task "$CURRENT_SKILL_ID")
+        if [[ "$skip_to" -ge 0 && "$skip_to" -lt "$total" ]]; then
+          CURRENT_TASK_INDEX=$skip_to
+          run_current_task
+        else
+          echo "Invalid task number to begin. Choose 1-$total."
+        fi
       else
-        echo "All tasks completed for this task. Returning to main menu."
-        CURRENT_SKILL_ID=""
-        CURRENT_TASK_INDEX=-1
-        clear
-        main_menu
+        echo "Invalid begin-task command. Use 'begin-task <task_number>', e.g. 'begin-task 1'."
       fi
     else
       echo "No active task to skip."
+    fi
+    ;;
+  next)
+    if [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 && "$CURRENT_TASK_COMPLETED" -eq 1 ]]; then
+      CURRENT_TASK_COMPLETED=0
+      total=$(get_task_count_for_task "$CURRENT_SKILL_ID")
+      if [[ "$CURRENT_TASK_INDEX" -lt "$total" ]]; then
+        CURRENT_TASK_INDEX=$((CURRENT_TASK_INDEX + 1))
+        run_current_task
+      else
+        CURRENT_SKILL_ID=""
+        CURRENT_TASK_INDEX=-1
+        main_menu
+      fi
+      if [[ -f next && ! -s next ]]; then rm next; fi
+    else
+      echo "No completed task to proceed from."
     fi
     ;;
   task-info)
@@ -886,10 +1267,12 @@ while true; do
     if [[ -z "$name" ]]; then
       echo "No active task."
     else
+      print_separator
       "explain_$name"
+      print_separator
     fi
     ;;
-  main-menu | quit-task)
+  main-menu)
     CURRENT_SKILL_ID=""
     CURRENT_TASK_INDEX=-1
     clear
@@ -898,7 +1281,6 @@ while true; do
   *)
     # Evaluate arbitrary shell commands in the game environment.
     if [[ -n "$command" ]]; then
-      tmp_output_file=$(mktemp)
       # If not in game dir do not eval but warn the user to cd into the game dir befor continuing
       if [[ "$PWD" != "$GAME_DIR"* ]]; then
         echo "You have left the game directory. Please 'cd $GAME_DIR' to return before continuing."
@@ -907,22 +1289,38 @@ while true; do
 
       # If any path arguments lead outside the game dir, do not eval but warn the user
       if outside_paths "$GAME_DIR" $command; then
-        echo "Error: One or more path arguments given to the command lead to outside the game directory. Quit the game if you want to work outside the game."
+        echo "Error: One or more path arguments given to the command lead to outside the game. Exit the game if you want to work outside the game."
         continue
       fi
 
-      # hide dummy autocompletion files
-      tmp_dummyfile_dir=$(mktemp -d)
-      mv $commands $task_commands "$tmp_dummyfile_dir/" >/dev/null 2>&1
+      # Hide dummy autocompletion files (delete only if empty)
+      for f in $commands $task_commands; do
+        [[ -f "$f" && ! -s "$f" ]] && rm "$f"
+      done
 
-      eval "$command" 2> >(sed -E "s|$0:\sline\s[0-9]+:\s||") >"$tmp_output_file"
-      LATEST_COMMAND_OUTPUT=$(<"$tmp_output_file")
-      if [[ -n "$LATEST_COMMAND_OUTPUT" ]]; then
-        echo "$LATEST_COMMAND_OUTPUT"
+      # Add --color=always to commands that support it (like ls) to improve visibility
+      if [[ "$command" =~ ^(ls)([[:space:]].*|$) ]]; then
+        command="${BASH_REMATCH[1]} --color=always${BASH_REMATCH[2]}"
       fi
-      rm "$tmp_output_file"
+      if [[ "$command" =~ ^(tree)([[:space:]].*|$) ]]; then
+        command="${BASH_REMATCH[1]} -C${BASH_REMATCH[2]}"
+      fi
 
-      mv --update=none "$tmp_dummyfile_dir/"* . >/dev/null 2>&1
+      # Execute the command
+
+      # If not a known interactive command such as less or redirection, capture stdout and stderr, stripping bash line info from errors
+      if [[ "$command" =~ ^(pager|less|nano|vi|vim|top|htop|man|>)([[:space:]].*|$) ]]; then
+        eval "$command"
+        LATEST_COMMAND_OUTPUT=""
+      else
+        tmp_output_file=$(mktemp)
+        eval "$command" 2> >(sed -E "s|$0:\sline\s[0-9]+:\s||") >"$tmp_output_file"
+        LATEST_COMMAND_OUTPUT=$(<"$tmp_output_file")
+        if [[ -n "$LATEST_COMMAND_OUTPUT" ]]; then
+          echo "$LATEST_COMMAND_OUTPUT"
+        fi
+        rm "$tmp_output_file"
+      fi
     fi
     # After running the user's command, check whether they've completed the active task.
     if [[ -n "$CURRENT_SKILL_ID" ]]; then
@@ -930,9 +1328,6 @@ while true; do
     fi
     ;;
   esac
-
-  history -s "$command"
-  history -a
 
 done
 
