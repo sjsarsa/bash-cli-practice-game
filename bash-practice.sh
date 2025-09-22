@@ -61,6 +61,7 @@ LATEST_COMMAND_OUTPUT=""
 declare -A TARGET_DIRS
 declare -A TARGET_FILES
 declare -A TARGET_SCRIPTS
+declare -A RANDOM_TASK_OPTIONS
 
 declare -a SKILLS=(
 )
@@ -853,27 +854,34 @@ check_create_empty_file() {
 # ============================================
 # SKILL 2 - TASK 2 - create_file_with_text
 # ============================================
+
 # shellcheck disable=SC2329
 setup_create_file_with_text() {
-  TARGET_FILES[create_file_with_text]="hello.txt"
+  task_options=("Hello my file!" "Text, here." "She sells C shells." "Bash on!")
+  file_options=("notes.txt" "todo.txt" "hello.txt" "readme.txt")
+  RANDOM_TASK_OPTIONS[create_file_with_text]="${task_options[RANDOM % ${#task_options[@]}]}"
+  TARGET_FILES[create_file_with_text]="${file_options[RANDOM % ${#file_options[@]}]}"
 }
 
 # shellcheck disable=SC2329
 explain_create_file_with_text() {
-  echo "Create a new file '${TARGET_FILES[create_file_with_text]}' in the current directory containing the text: Hello my file!.
+  echo "Create a new file '${TARGET_FILES[create_file_with_text]}' in the current directory containing the line:
 
-Once created, verify that the file contains the correct text with 'cat'.
+${RANDOM_TASK_OPTIONS[create_file_with_text]}
+
+Once the file is created, verify that the file contains the correct text with 'cat'.
 
 Tip: Use one of:
   - (1) echo with redirection ('> filename')
-  - (3) start a command line text editor with the filename as an argument, e.g. 'nano filename' or 'vim filename'
-  - (2) create an empty file and open it with the system's default text editor ('open filename' on Linux/Mac, 'start filename' on Windows) — may not be available in all environments (e.g. servers).
+  - (2) start a command line text editor with the filename as an argument, e.g. 'nano filename' or 'vim filename'
+  - (3) create an empty file and open it with the system's default text editor ('open filename' on Linux/Mac, 'start filename' on Windows) — may not be available in all environments (e.g. servers).
     " | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
 check_create_file_with_text() {
-  [[ -f "$GAME_DIR/${TARGET_FILES[create_file_with_text]}" && "$(cat "$GAME_DIR/${TARGET_FILES[create_file_with_text]}")" == "Hello my file!" ]] && [[ "$(history | tail -n 1)" =~ cat ]] && [[ ${LATEST_COMMAND_OUTPUT} == "Hello my file!" ]]
+  expected_text="${RANDOM_TASK_OPTIONS[create_file_with_text]}"
+  [[ -f "$GAME_DIR/${TARGET_FILES[create_file_with_text]}" && "$(cat "$GAME_DIR/${TARGET_FILES[create_file_with_text]}")" == "$expected_text" ]] && [[ "$(history | tail -n 1)" =~ cat ]] && [[ ${LATEST_COMMAND_OUTPUT} == "$expected_text" ]]
 }
 
 # ============================================
