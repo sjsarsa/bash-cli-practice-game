@@ -4,7 +4,7 @@ A game-like cli tool to practice basic command line usage with bash.
 To start practicing the game, downloading the bash-practice.sh file
 
 ```sh
-wget https://raw.githubusercontent.com/sjsarsa/bash-cli-practice-game/refs/heads/main/bash-practice.sh
+curl https://raw.githubusercontent.com/sjsarsa/bash-cli-practice-game/refs/heads/main/bash-practice.sh -o bash-practice.sh
 ```
 
 and then start it with `bash`:
