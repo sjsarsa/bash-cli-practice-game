@@ -683,12 +683,16 @@ check_return_home() {
 # shellcheck disable=SC2329
 setup_find_file() {
   rm -rf "$GAME_DIR/haystack"
+  echo -n "Preparing a haystack of directories, please wait..."
   TARGET_DIRS[find_file]=$(make_haystack "$GAME_DIR/haystack")
 }
 
 # shellcheck disable=SC2329
 explain_find_file() {
-  echo "A file named 'needle.txt' has been hidden somewhere inside the directory 'haystack'.
+  echo " Haystack ready!
+
+A file named 'needle.txt' has been hidden somewhere inside the directory 'haystack'.
+
 Navigate to the directory containing the file.
 
 Tip: Use 'find -name <filename>' to locate it. " | fold -s -w "$PRINT_WIDTH"
