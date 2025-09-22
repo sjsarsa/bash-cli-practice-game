@@ -548,7 +548,7 @@ make_haystack() {
 
   mkdir -p "$NEEDLE_DIR"
   echo "SECRET_PASSWORD=opensesame" >"$NEEDLE_DIR/needle.txt"
-  echo "${NEEDLE_DIR}" # return path to the needle file's directory
+  realpath "${NEEDLE_DIR}" # return path to the needle file's directory
 }
 
 # ======================================================================
@@ -1249,7 +1249,7 @@ while true; do
     if [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 && "$CURRENT_TASK_COMPLETED" -eq 1 ]]; then
       CURRENT_TASK_COMPLETED=0
       total=$(get_task_count_for_task "$CURRENT_SKILL_ID")
-      if [[ "$CURRENT_TASK_INDEX" -lt "$total" ]]; then
+      if [[ $((CURRENT_TASK_INDEX + 1)) -lt "$total" ]]; then
         CURRENT_TASK_INDEX=$((CURRENT_TASK_INDEX + 1))
         run_current_task
       else
