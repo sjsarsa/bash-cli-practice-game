@@ -995,9 +995,9 @@ explain_copy_file() {
   echo "
 The directory '${TARGET_DIRS[copy_file]}' contains a file named '${TARGET_FILES[copy_file_source]}' with the contents: This is a report, yes.
 
-Create a copy of the file '${TARGET_FILES[copy_file_source]}' in '${TARGET_FILES[copy_file_dest]}' inside the same directory ${TARGET_DIRS[return_home]}.
+Create a copy of the file '${TARGET_FILES[copy_file_source]}' in '${TARGET_FILES[copy_file_dest]}' inside the same directory ('${TARGET_DIRS[copy_file]}').
 
-Once done, verify that both files exist with 'ls'.
+Once done, verify that you see both of the files with 'ls'.
 If you want to be extra sure, you can check the contents of both files with 'cat'.
 
 Tip: Use the 'cp' command." | fold -s -w "$PRINT_WIDTH"
