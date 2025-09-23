@@ -15,7 +15,7 @@
 #   TASK 2: create_empty_file [ ]
 #   TASK 3: create_file_with_text [ ]
 #   TASK 4: create_dir [ ]
-#   TASK 5: create_dirs [ ]
+#   TASK 5: create_nested_dirs [ ]
 #   TASK 6: remove_file [ ]
 #   TASK 7: remove_recursively [ ]
 #   TASK 8: copy_file [ ]
@@ -907,16 +907,16 @@ check_create_dir() {
 }
 
 # ============================================
-# SKILL 2 - TASK 5 - create_dirs
+# SKILL 2 - TASK 5 - create_nested_dirs
 # ============================================
 # shellcheck disable=SC2329
-setup_create_dirs() {
-  TARGET_DIRS[create_dirs]="project_$(shuf -i 100-999 -n 1)/tests/integration"
+setup_create_nested_dirs() {
+  TARGET_DIRS[create_nested_dirs]="project_$(shuf -i 100-999 -n 1)/tests/integration"
 }
 
 # shellcheck disable=SC2329
-explain_create_dirs() {
-  echo "Create a new directory '${TARGET_DIRS[create_dirs]}'
+explain_create_nested_dirs() {
+  echo "Create a new directory '${TARGET_DIRS[create_nested_dirs]}'
 
 After this is done, verify it exists with 'find -name integration'.
 
@@ -924,8 +924,8 @@ Tip: You can create multiple nested directories in one command with the '-p' opt
 }
 
 # shellcheck disable=SC2329
-check_create_dirs() {
-  [[ -d "$GAME_DIR/${TARGET_DIRS[create_dirs]}" ]] && [[ "$(history | tail -n 1)" =~ find[[:space:]]+-name[[:space:]]+integration ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]
+check_create_nested_dirs() {
+  [[ -d "$GAME_DIR/${TARGET_DIRS[create_nested_dirs]}" ]] && [[ "$(history | tail -n 1)" =~ find[[:space:]]+-name[[:space:]]+integration ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]
 }
 
 # ============================================
