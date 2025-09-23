@@ -31,6 +31,10 @@
 #   TASK 2: create_and_run_ls [ ]
 #   TASK 3: echo and redirect [ ]
 
+# ======================================================================
+# Coreutils replacements (for BSD etc. compatibility)
+# ======================================================================
+
 realpath_m() {
   local path=$1
   local -a parts out
@@ -63,6 +67,40 @@ realpath_m() {
   done
 
   printf '/%s\n' "$(IFS=/; echo "${out[*]}")"
+}
+
+# readarray replacement
+readarray() {
+    local OPTIND opt
+    local strip_newline=0
+
+    # Only support -t (strip newline)
+    while getopts "t" opt; do
+        case $opt in
+            t) strip_newline=1 ;;
+            *) echo "Usage: readarray [-t] array" >&2; return 1 ;;
+        esac
+    done
+    shift $((OPTIND-1))
+
+    local arrname=$1
+    if [ -z "$arrname" ]; then
+        echo "Usage: readarray [-t] array" >&2
+        return 1
+    fi
+
+    # Read into a temp array
+    local line tmp=()
+    while IFS= read -r line; do
+        if [ $strip_newline -eq 0 ]; then
+            tmp+=("$line")
+        else
+            tmp+=("${line%$'\n'}")
+        fi
+    done
+
+    # Assign temp array to target array variable
+    eval "$arrname"='("${tmp[@]}")'
 }
 
 # ======================================================================
@@ -183,40 +221,6 @@ is_task_completed() {
     fi
   done
   return 0
-}
-
-realpath_m() {
-  local path=$1
-  local -a parts out
-  local IFS=/
-
-  # if relative, prefix with $PWD
-  case $path in
-    /*) ;;
-    *) path="$PWD/$path" ;;
-  esac
-
-  # split into parts
-  read -r -a parts <<<"$path"
-
-  out=()
-  for part in "${parts[@]}"; do
-    case $part in
-      ''|.)   # skip empty and "."
-        ;;
-      ..)
-        # pop last element if possible
-        if [ ${#out[@]} -gt 0 ]; then
-          unset 'out[${#out[@]}-1]'
-        fi
-        ;;
-      *)
-        out+=("$part")
-        ;;
-    esac
-  done
-
-  printf '/%s\n' "$(IFS=/; echo "${out[*]}")"
 }
 
 # Utility to check if any path arguments in a command are outside the allowed base directory
