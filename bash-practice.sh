@@ -152,20 +152,36 @@ is_task_completed() {
 
 realpath_m() {
   local path=$1
+  local -a parts out
+  local IFS=/
+
+  # if relative, prefix with $PWD
   case $path in
-    /*) ;;  # already absolute
+    /*) ;;
     *) path="$PWD/$path" ;;
   esac
 
-  # simplify /./ and /../ lexically
-  local old=
-  while [ "$old" != "$path" ]; do
-    old=$path
-    path=${path//\/.\//\/}        # remove /./
-    path=${path%/./}              # handle trailing /.
-    path=$(printf "%s\n" "$path" | sed -E ':a; s#/[^/]+/\.\./#/#; ta')  # collapse /../
+  # split into parts
+  read -r -a parts <<<"$path"
+
+  out=()
+  for part in "${parts[@]}"; do
+    case $part in
+      ''|.)   # skip empty and "."
+        ;;
+      ..)
+        # pop last element if possible
+        if [ ${#out[@]} -gt 0 ]; then
+          unset 'out[${#out[@]}-1]'
+        fi
+        ;;
+      *)
+        out+=("$part")
+        ;;
+    esac
   done
-  echo "$path"
+
+  printf '/%s\n' "$(IFS=/; echo "${out[*]}")"
 }
 
 # Utility to check if any path arguments in a command are outside the allowed base directory
