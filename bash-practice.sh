@@ -786,6 +786,11 @@ A file named 'needle.txt' has been hidden somewhere inside the directory 'haysta
 Navigate to the directory containing the file.
 
 Tip: Use 'find -name <filename>' to locate it. " | fold -s -w "$PRINT_WIDTH"
+
+  # MacOS find quirk note
+  if [[ "$(uname)" == "Darwin" ]]; then
+    echo -e "${RED}${BOLD}Note for MacOS users:${RESET} ${DIM}The default 'find' command on MacOS is slightly different from GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${RESET}"
+  fi
 }
 
 # shellcheck disable=SC2329
