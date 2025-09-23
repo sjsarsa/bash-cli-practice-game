@@ -131,10 +131,10 @@ CURRENT_TASK_COMPLETED=0
 LATEST_COMMAND_OUTPUT=""
 
 # Randomized targets
-declare -A TARGET_DIRS
-declare -A TARGET_FILES
-declare -A TARGET_SCRIPTS
-declare -A RANDOM_TASK_OPTIONS
+declare TARGET_DIRS
+declare TARGET_FILES
+declare TARGET_SCRIPTS
+declare RANDOM_TASK_OPTIONS
 
 declare -a SKILLS=(
 )
