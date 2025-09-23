@@ -916,14 +916,14 @@ setup_create_nested_dirs() {
 explain_create_nested_dirs() {
   echo "Create a new directory '${TARGET_DIRS[create_nested_dirs]}'
 
-After this is done, verify it exists with 'find -name integration'.
+After this is done, verify it exists with 'find -name integration' or by cd:ing into the directory.
 
 Tip: You can create multiple nested directories in one command with the '-p' option of 'mkdir': 'mkdir -p <path>'." | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
 check_create_nested_dirs() {
-  [[ -d "$GAME_DIR/${TARGET_DIRS[create_nested_dirs]}" ]] && [[ "$(history | tail -n 1)" =~ find[[:space:]]+-name[[:space:]]+integration ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]
+  [[ -d "$GAME_DIR/${TARGET_DIRS[create_nested_dirs]}" ]] && { [[ "$(history | tail -n 1)" =~ find[[:space:]]+-name[[:space:]]+integration ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]; } || [[ "$(basename "$PWD")" == "integration" ]];
 }
 
 # ============================================
