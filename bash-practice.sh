@@ -196,7 +196,10 @@ show_progress() {
   else
     echo "Task progress for ${SKILLS[$((CURRENT_SKILL_ID - 1))]}:"
     local tasks
-    declare -n tasks="SKILL_${CURRENT_SKILL_ID}_TASKS"
+
+    tasks="SKILL_${CURRENT_SKILL_ID}_TASKS"
+    eval "tasks=(\"\${${tasks}[@]}\")"
+
     for i in "${!tasks[@]}"; do
       sub_num=$((i + 1))
       line="#   TASK ${sub_num}: ${tasks[i]} [✔]"
@@ -210,7 +213,9 @@ show_progress() {
 is_task_completed() {
   local task_id=$1
   local tasks
-  declare -n tasks="SKILL_${task_id}_TASKS"
+
+  tasks="SKILL_${task_id}_TASKS"
+  eval "tasks=(\"\${${tasks}[@]}\")"
 
   local i
   for i in "${!tasks[@]}"; do
@@ -481,7 +486,10 @@ The command line lets you create, view, copy, move, and delete files or director
 get_current_task_name() {
   local tid=$1 idx=$2
   local tasks
-  declare -n tasks="SKILL_${tid}_TASKS"
+
+  tasks="SKILL_${CURRENT_SKILL_ID}_TASKS"
+  eval "tasks=(\"\${${tasks}[@]}\")"
+
   if [[ "$idx" -ge 0 && "$idx" -lt "${#tasks[@]}" ]]; then
     echo "${tasks[$idx]}"
   else
@@ -492,7 +500,10 @@ get_current_task_name() {
 get_task_count_for_task() {
   local tid=$1
   local tasks
-  declare -n tasks="SKILL_${tid}_TASKS"
+
+  tasks="SKILL_${CURRENT_SKILL_ID}_TASKS"
+  eval "tasks=(\"\${${tasks}[@]}\")"
+
   echo "${#tasks[@]}"
 }
 
