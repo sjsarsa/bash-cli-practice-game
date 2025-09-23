@@ -31,9 +31,44 @@
 #   TASK 2: create_and_run_ls [ ]
 #   TASK 3: echo and redirect [ ]
 
+realpath_m() {
+  local path=$1
+  local -a parts out
+  local IFS=/
+
+  # if relative, prefix with $PWD
+  case $path in
+    /*) ;;
+    *) path="$PWD/$path" ;;
+  esac
+
+  # split into parts
+  read -r -a parts <<<"$path"
+
+  out=()
+  for part in "${parts[@]}"; do
+    case $part in
+      ''|.)   # skip empty and "."
+        ;;
+      ..)
+        # pop last element if possible
+        if [ ${#out[@]} -gt 0 ]; then
+          unset 'out[${#out[@]}-1]'
+        fi
+        ;;
+      *)
+        out+=("$part")
+        ;;
+    esac
+  done
+
+  printf '/%s\n' "$(IFS=/; echo "${out[*]}")"
+}
+
 # ======================================================================
 # Colors
 # ======================================================================
+
 BOLD_YELLOW="\e[1;33m"
 CYAN="\e[36m"
 DIM="\e[2m"
@@ -51,7 +86,7 @@ reset=$'\e[0m'
 # Global Variables
 # ======================================================================
 GAME_DIR=""
-SCRIPT_ABS_PATH=$(realpath "$0")
+SCRIPT_ABS_PATH=$(realpath_m "$0")
 CURRENT_SKILL_ID=""
 CURRENT_TASK_INDEX=-1
 CURRENT_TASK_COMPLETED=0
@@ -581,7 +616,7 @@ make_haystack() {
 
   mkdir -p "$NEEDLE_DIR"
   echo "SECRET_PASSWORD=opensesame" >"$NEEDLE_DIR/needle.txt"
-  realpath "${NEEDLE_DIR}" # return path to the needle file's directory
+  realpath_m "${NEEDLE_DIR}" # return path to the needle file's directory
 }
 
 # ======================================================================
