@@ -107,15 +107,11 @@ readarray() {
 # Colors
 # ======================================================================
 
-BOLD_YELLOW="\e[1;33m"
-CYAN="\e[36m"
-DIM="\e[2m"
-RESET="\e[0m"
-
-yello_bold=$'\e[1;33m'
+yellow_bold=$'\e[1;33m'
 cyan=$'\e[36m'
 green_bold=$'\e[1;32m'
 blue_bold=$'\e[1;34m'
+bold=$'\e[1m'
 red=$'\e[31m'
 dim=$'\e[2m'
 reset=$'\e[0m'
@@ -364,7 +360,7 @@ Navigating the Filesystem:
 
 Nearly all filesystems today are hierarchical, meaning that files are organised into directories in tree-like structure. Such as:
 
-${CYAN}/
+${cyan}/
 ├── home
 │   └── user
 │       ├── docs
@@ -373,47 +369,47 @@ ${CYAN}/
 └── system
     └── log
         ├── syslog
-        └── auth.log${RESET}
+        └── auth.log${reset}
 
 We can move around and explore the file systems contents quickly using only a few command line commands."
 
     prompt_enter_or_q || return
 
-    echo -e "A path in a filesystem specifies the location of a file or directory in the filesystem. It can be absolute (starting from the root, e.g., ${CYAN}/home/user/docs${RESET}) or relative (starting from the current working directory, e.g., ${CYAN}../docs/file.txt${RESET}). In Unix-like systems, paths use forward slashes (${CYAN}/${RESET}) to separate directories. In Windows, backslash (${CYAN}\\\\${RESET}) is the default path separator, although many Windows command line tools (such as PowerShell and Git Bash) accept forward slashes.
+    echo -e "A path in a filesystem specifies the location of a file or directory in the filesystem. It can be absolute (starting from the root, e.g., ${cyan}/home/user/docs${reset}) or relative (starting from the current working directory, e.g., ${cyan}../docs/file.txt${reset}). In Unix-like systems, paths use forward slashes (${cyan}/${reset}) to separate directories. In Windows, backslash (${cyan}\\\\${reset}) is the default path separator, although many Windows command line tools (such as PowerShell and Git Bash) accept forward slashes.
 
 Special directory names:
-  - The root of the filesystem is represented by a single forward slash (${CYAN}/${RESET}).
-  - Your home directory is represented by a tilde (${CYAN}~${RESET}).
-  - A single dot (${CYAN}.${RESET}) represents the current directory.
-  - A double dot (${CYAN}..${RESET}) represents the parent directory (one level up)."
+  - The root of the filesystem is represented by a single forward slash (${cyan}/${reset}).
+  - Your home directory is represented by a tilde (${cyan}~${reset}).
+  - A single dot (${cyan}.${reset}) represents the current directory.
+  - A double dot (${cyan}..${reset}) represents the parent directory (one level up)."
 
     prompt_enter_or_q || return
 
     echo -e "Common commands for navigation:
-  - ${BOLD_YELLOW}pwd${RESET} (Print Working Directory): Shows you where you are.
+  - ${yellow_bold}pwd${reset} (Print Working Directory): Shows you where you are.
 
-  - ${BOLD_YELLOW}ls${RESET} (List): Shows what files and folders are in your current location.
-      • Use ${CYAN}ls -1${RESET} to print one entry per line.
-      • Use ${CYAN}ls -a${RESET} to include hidden files.
-      • Options can be combined, e.g., ${CYAN}ls -1a${RESET}.
+  - ${yellow_bold}ls${reset} (List): Shows what files and folders are in your current location.
+      • Use ${cyan}ls -1${reset} to print one entry per line.
+      • Use ${cyan}ls -a${reset} to include hidden files.
+      • Options can be combined, e.g., ${cyan}ls -1a${reset}.
 
-  - ${BOLD_YELLOW}cd [dir]${RESET} (Change Directory): Moves you to another folder specified by the given argument.
-      • ${CYAN}cd${RESET} or ${CYAN}cd ~${RESET} moves you to your home directory.
-        ${DIM}(In this game, your home directory is the same as the game root)${RESET}
-      • ${CYAN}cd ..${RESET} moves you up one level.
-      • ${CYAN}cd ../..${RESET} moves you up two levels.
-      • ${CYAN}cd /${RESET} takes you to the root directory.
+  - ${yellow_bold}cd [dir]${reset} (Change Directory): Moves you to another folder specified by the given argument.
+      • ${cyan}cd${reset} or ${cyan}cd ~${reset} moves you to your home directory.
+        ${dim}(In this game, your home directory is the same as the game root)${reset}
+      • ${cyan}cd ..${reset} moves you up one level.
+      • ${cyan}cd ../..${reset} moves you up two levels.
+      • ${cyan}cd /${reset} takes you to the root directory.
 
-  - ${BOLD_YELLOW}find${RESET} (Find): Searches for files and directories in a directory hierarchy.
-      • Use ${CYAN}find . -name 'filename'${RESET} to search for a file named 'filename' starting from the current directory (${CYAN}.${RESET}).
-      • You can use wildcards, e.g., ${CYAN}find . -name '*.txt'${RESET} to find all text files.
-  - ${BOLD_YELLOW}tree${RESET} (tree.com in Windows): Displays the directory structure in a tree-like format.
+  - ${yellow_bold}find${reset} (Find): Searches for files and directories in a directory hierarchy.
+      • Use ${cyan}find . -name 'filename'${reset} to search for a file named 'filename' starting from the current directory (${cyan}.${reset}).
+      • You can use wildcards, e.g., ${cyan}find . -name '*.txt'${reset} to find all text files.
+  - ${yellow_bold}tree${reset} (tree.com in Windows): Displays the directory structure in a tree-like format.
       • Great for getting a full overview.
-      • ${DIM}NOTE: This command may not be installed by default on all systems.${RESET}
-          - On Ubuntu/Debian: ${CYAN}sudo apt install tree${RESET}
-          - On MacOS: ${CYAN}brew install tree${RESET}
-          - On Windows Git Bash: not available, instead use Windows' ${CYAN}tree.com //f${RESET}
-            (${CYAN}//f${RESET} shows files in the tree view).
+      • ${dim}NOTE: This command may not be installed by default on all systems.${reset}
+          - On Ubuntu/Debian: ${cyan}sudo apt install tree${reset}
+          - On MacOS: ${cyan}brew install tree${reset}
+          - On Windows Git Bash: not available, instead use Windows' ${cyan}tree.com //f${reset}
+            (${cyan}//f${reset} shows files in the tree view).
   " | fold -s -w "$PRINT_WIDTH"
     ;;
   "2") echo -e "
@@ -428,31 +424,31 @@ The command line lets you create, view, copy, move, and delete files or director
     prompt_enter_or_q || return
 
     echo -e "Common commands for managing files and folders:
-  - ${BOLD_YELLOW}cat [file]${RESET} (Concatenate): Displays the contents of a file in the terminal.
-      • Example: ${CYAN}cat notes.txt${RESET}
+  - ${yellow_bold}cat [file]${reset} (Concatenate): Displays the contents of a file in the terminal.
+      • Example: ${cyan}cat notes.txt${reset}
 
-  - ${BOLD_YELLOW}touch [file]${RESET}: Creates a new, empty file. If the file already exists, its timestamp is updated.
-      • Example: ${CYAN}touch newfile.txt${RESET}
+  - ${yellow_bold}touch [file]${reset}: Creates a new, empty file. If the file already exists, its timestamp is updated.
+      • Example: ${cyan}touch newfile.txt${reset}
 
-  - ${BOLD_YELLOW}mkdir [dir]${RESET} (Make Directory): Creates a new, empty folder.
-      • Example: ${CYAN}mkdir projects${RESET}
+  - ${yellow_bold}mkdir [dir]${reset} (Make Directory): Creates a new, empty folder.
+      • Example: ${cyan}mkdir projects${reset}
 
-  - ${BOLD_YELLOW}echo 'text' > [file]${RESET}: Writes text into a file. If the file exists, its contents are overwritten.
-      • Example: ${CYAN}echo 'Hello World' > hello.txt${RESET}
-      • Use ${CYAN}>>${RESET} instead of ${CYAN}>${RESET} to append without overwriting.
-  - ${BOLD_YELLOW}cp [src] [dest]${RESET} (Copy): Duplicates files or directories.
-      • Example (file): ${CYAN}cp file.txt backup.txt${RESET}
-      • Example (directory): ${CYAN}cp -r src_dir backup_dir${RESET}
-        ${DIM}(The ${CYAN}-r${RESET} option copies directories recursively)${RESET}
+  - ${yellow_bold}echo 'text' > [file]${reset}: Writes text into a file. If the file exists, its contents are overwritten.
+      • Example: ${cyan}echo 'Hello World' > hello.txt${reset}
+      • Use ${cyan}>>${reset} instead of ${cyan}>${reset} to append without overwriting.
+  - ${yellow_bold}cp [src] [dest]${reset} (Copy): Duplicates files or directories.
+      • Example (file): ${cyan}cp file.txt backup.txt${reset}
+      • Example (directory): ${cyan}cp -r src_dir backup_dir${reset}
+        ${dim}(The ${cyan}-r${reset} option copies directories recursively)${reset}
 
-  - ${BOLD_YELLOW}mv [src] [dest]${RESET} (Move): Moves or renames files and directories.
-      • Example (rename): ${CYAN}mv oldname.txt newname.txt${RESET}
-      • Example (move): ${CYAN}mv file.txt ~/docs/${RESET}
+  - ${yellow_bold}mv [src] [dest]${reset} (Move): Moves or renames files and directories.
+      • Example (rename): ${cyan}mv oldname.txt newname.txt${reset}
+      • Example (move): ${cyan}mv file.txt ~/docs/${reset}
 
-  - ${BOLD_YELLOW}rm [file]${RESET} (Remove): Deletes files permanently.
-      • Example: ${CYAN}rm oldfile.txt${RESET}
-      • Example (directory): ${CYAN}rm -r foldername${RESET}
-        ${RED}${BOLD}Warning:${RESET} ${DIM}There is no recycle bin with rm — once deleted, files are gone!${RESET}
+  - ${yellow_bold}rm [file]${reset} (Remove): Deletes files permanently.
+      • Example: ${cyan}rm oldfile.txt${reset}
+      • Example (directory): ${cyan}rm -r foldername${reset}
+        ${red}Warning:${reset} ${dim}There is no recycle bin with rm — once deleted, files are gone!${reset}
 
     " | fold -s -w "$PRINT_WIDTH"
     ;;
@@ -789,7 +785,7 @@ Tip: Use 'find -name <filename>' to locate it. " | fold -s -w "$PRINT_WIDTH"
 
   # MacOS find quirk note
   if [[ "$(uname)" == "Darwin" ]]; then
-    echo -e "${RED}${BOLD}Note for MacOS users:${RESET} ${DIM}The default 'find' command on MacOS is slightly different from GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${RESET}"
+    echo -e "${bold}Note for MacOS users:${reset} ${dim}The default 'find' command on MacOS is slightly different from GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${reset}"
   fi
 }
 
