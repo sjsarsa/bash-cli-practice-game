@@ -573,7 +573,7 @@ check_current_task() {
 # shellcheck disable=SC2329
 rand_string() {
   local length=${1:-3}
-  head -c 100 /dev/urandom | tr -dc 'a-z0-9' | head -c "$length"
+  head -c 100 /dev/urandom | LC_ALL=C tr -dc 'a-z0-9' | head -c "$length"
 }
 
 # Helper for building a haystack for finding files
@@ -606,7 +606,7 @@ make_haystack() {
     if [ "$DEPTH" -lt "$MAX_DEPTH" ]; then
       local NUM_SUBDIRS=$((RANDOM % 4)) # up to 3 subdirs
       for _ in $(seq 1 $NUM_SUBDIRS); do
-        SUBDIR="$DIR/subdir$(rand_string 3)"
+        SUBDIR="$DIR/subdir_$(rand_string 3)"
         mkdir -p "$SUBDIR"
         create_random_tree "$SUBDIR" $((DEPTH + 1))
       done
@@ -628,7 +628,7 @@ make_haystack() {
     # if * in SUBDIRS is not expanded, there are no subdirs
     # create one and break
     if [ "${SUBDIRS[0]}" == "$NEEDLE_DIR/*/" ]; then
-      NEEDLE_DIR="$NEEDLE_DIR/subdir$(rand_string 3)"
+      NEEDLE_DIR="$NEEDLE_DIR/subdir_$(rand_string 3)"
       break
     fi
 
