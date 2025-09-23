@@ -1158,6 +1158,54 @@ trap cleanup EXIT
 setup_game
 main_menu
 
+get_relpath() {
+  local target base
+  if [ "${1#--relative-to=}" != "$1" ]; then
+    base="${1#--relative-to=}"
+    shift
+    target="$1"
+  else
+    target="$1"; base="$2"
+  fi
+  if [ -z "$target" ] || [ -z "$base" ]; then
+    printf 'usage: relpath_bash TARGET BASE\n' >&2
+    return 2
+  fi
+
+  # build absolute, resolved forms (uses pwd -P => resolves symlinks)
+  target="$(cd "$(dirname -- "$target")" 2>/dev/null && pwd -P)/$(basename -- "$target")" || return 1
+  base="$(cd "$(dirname -- "$base")" 2>/dev/null && pwd -P)/$(basename -- "$base")" || return 1
+
+  # strip trailing slash (except keep root as "/")
+  [ "$target" != "/" ] && target="${target%/}"
+  [ "$base" != "/" ]   && base="${base%/}"
+
+  IFS='/' read -r -a ta <<< "${target#/}"
+  IFS='/' read -r -a ba <<< "${base#/}"
+
+  # find common prefix length
+  local i=0 max=${#ta[@]}
+  [ ${#ba[@]} -lt $max ] && max=${#ba[@]}
+  while [ $i -lt $max ] && [ "${ta[$i]}" = "${ba[$i]}" ]; do
+    i=$((i+1))
+  done
+
+  # for each remaining component in base, add ".."
+  local up=$(( ${#ba[@]} - i ))
+  local out=""
+  local j
+  for ((j=0;j<up;j++)); do out+="../"; done
+
+  # append remaining target components
+  for ((j=i;j<${#ta[@]};j++)); do
+    out+="${ta[$j]}"
+    if [ $j -lt $(( ${#ta[@]} - 1 )) ]; then out+="/"; fi
+  done
+
+  [ -z "$out" ] && out="."
+  printf '%s\n' "$out"
+}
+
 game_prompt() {
   local base_prompt relpath
   if [[ -n "$CURRENT_SKILL_ID" && "$CURRENT_TASK_INDEX" -ge 0 ]]; then
@@ -1165,7 +1213,7 @@ game_prompt() {
   else
     base_prompt="bash-practice (main menu)"
   fi
-  relpath=$(realpath --relative-to="$GAME_DIR" "$PWD")
+  relpath=$(get_relpath "$PWD" "$GAME_DIR")
   if [[ "$relpath" == "." ]]; then
     relpath="~"
   else
