@@ -569,6 +569,12 @@ check_current_task() {
   fi
 }
 
+# shellcheck disable=SC2329
+rand_string() {
+  local length=${1:-3}
+  head -c 100 /dev/urandom | tr -dc 'a-z0-9' | head -c "$length"
+}
+
 # Helper for building a haystack for finding files
 # shellcheck disable=SC2329
 make_haystack() {
@@ -591,15 +597,15 @@ make_haystack() {
     for f in $(seq 1 "$NUM_FILES"); do
       EXTENSIONS=(txt log md conf csv dat)
       EXT=${EXTENSIONS[$RANDOM % ${#EXTENSIONS[@]}]}
-      FILENAME="file$(printf "%03d" $f)_$(tr -dc 'a-z0-9' </dev/urandom | head -c 5).$EXT"
+      FILENAME="file$(printf "%03d" $f)_$(rand_string 5).$EXT"
       echo "This is $FILENAME inside $DIR" >"$DIR/$FILENAME"
     done
 
     # Maybe create subdirectories (stop if max depth)
     if [ "$DEPTH" -lt "$MAX_DEPTH" ]; then
       local NUM_SUBDIRS=$((RANDOM % 4)) # up to 3 subdirs
-      for s in $(seq 1 $NUM_SUBDIRS); do
-        SUBDIR="$DIR/subdir$(tr -dc 'a-z0-9' </dev/urandom | head -c 3)"
+      for _ in $(seq 1 $NUM_SUBDIRS); do
+        SUBDIR="$DIR/subdir$(rand_string 3)"
         mkdir -p "$SUBDIR"
         create_random_tree "$SUBDIR" $((DEPTH + 1))
       done
@@ -621,7 +627,7 @@ make_haystack() {
     # if * in SUBDIRS is not expanded, there are no subdirs
     # create one and break
     if [ "${SUBDIRS[0]}" == "$NEEDLE_DIR/*/" ]; then
-      NEEDLE_DIR="$NEEDLE_DIR/subdir$(tr -dc 'a-z0-9' </dev/urandom | head -c 3)"
+      NEEDLE_DIR="$NEEDLE_DIR/subdir$(rand_string 3)"
       break
     fi
 
