@@ -70,6 +70,7 @@ realpath_m() {
 }
 
 # readarray replacement
+# shellcheck disable=SC2329
 readarray() {
     local OPTIND opt
     local strip_newline=0
@@ -138,7 +139,7 @@ declare -a SKILLS=(
 
 # Revert to hard coding if dynamic reading fails on e.g. Git Bash
 # Read dynamically from task definition comments below with grep
-task_lines=$(grep -E '^# SKILL [0-9]+ - (\w+\s*)+$' $SCRIPT_ABS_PATH)
+task_lines=$(grep -E '^# SKILL [0-9]+ - (\w+\s*)+$' "$SCRIPT_ABS_PATH")
 readarray -t SKILLS < <(echo "$task_lines" | sed -E 's|^# SKILL [0-9]+ - (.+)$|\1|')
 num_skills=${#SKILLS[@]}
 
@@ -1110,7 +1111,7 @@ check_copy_file() {
 # ============================================
 # shellcheck disable=SC2329
 setup_make_executable() {
-  TARGET_DIRS[make_executable]="secure_vault_$(($RANDOM % 899 + 100))"
+  TARGET_DIRS[make_executable]="secure_vault_$((RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[make_executable]}"
   TARGET_FILES[make_executable]="${TARGET_DIRS[make_executable]}/locked.txt"
   touch "${TARGET_FILES[make_executable]}"
@@ -1133,7 +1134,7 @@ check_make_executable() {
 # ============================================
 # shellcheck disable=SC2329
 setup_set_owner_permissions() {
-  TARGET_DIRS[set_owner_permissions]="secure_vault_$(($RANDOM % 899 + 100))"
+  TARGET_DIRS[set_owner_permissions]="secure_vault_$((RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[set_owner_permissions]}"
   TARGET_FILES[set_owner_permissions]="${TARGET_DIRS[set_owner_permissions]}/secret.sh"
   touch "${TARGET_FILES[set_owner_permissions]}"
@@ -1159,7 +1160,7 @@ check_set_owner_permissions() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_and_run_simple() {
-  TARGET_SCRIPTS[create_and_run_simple]="myscript_$(($RANDOM % 899 + 100)).sh"
+  TARGET_SCRIPTS[create_and_run_simple]="myscript_$((RANDOM % 899 + 100)).sh"
 }
 
 # shellcheck disable=SC2329
@@ -1178,7 +1179,7 @@ check_create_and_run_simple() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_and_run_ls() {
-  TARGET_SCRIPTS[create_and_run_ls]="list_files_$(($RANDOM % 899 + 100)).sh"
+  TARGET_SCRIPTS[create_and_run_ls]="list_files_$((RANDOM % 899 + 100)).sh"
 }
 
 # shellcheck disable=SC2329
@@ -1327,7 +1328,7 @@ while true; do
   [[ -n "$CURRENT_SKILL_ID" ]] && touch $task_commands
 
   # printf "%s" "$GAME_PROMPT"
-  read -e -p "$(game_prompt)" command
+  read -r -e -p "$(game_prompt)" command
 
   history -s "$command"
   history -a
