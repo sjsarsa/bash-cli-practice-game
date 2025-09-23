@@ -649,8 +649,8 @@ make_haystack() {
 # ============================================
 # shellcheck disable=SC2329
 setup_print_working_dir() {
-  random_suffix=$(shuf -i 100-999 -n 1)
-  random_suffix2=$(shuf -i 100-999 -n 1)
+  random_suffix=$(($RANDOM % 899 + 100))
+  random_suffix2=$(($RANDOM % 899 + 100))
   TARGET_DIRS[print_working_dir]="data_$random_suffix/users/user$random_suffix2"
 
   mkdir -p "$GAME_DIR/${TARGET_DIRS[print_working_dir]}"
@@ -673,7 +673,7 @@ check_print_working_dir() {
 # ============================================
 # shellcheck disable=SC2329
 setup_go_to_subdir() {
-  TARGET_DIRS[go_to_subdir]="data_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[go_to_subdir]="data_$(($RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[go_to_subdir]}/docs/archive"
 }
 
@@ -696,12 +696,12 @@ setup_go_to_subdir2() {
   local i
   local subdir
   for i in $(seq 1 3); do
-    subdir="data_$(shuf -i 100-999 -n 1)/docs"
+    subdir="data_$(($RANDOM % 899 + 100))/docs"
     mkdir -p "$subdir"
     echo "nothing to see here..." >"$subdir/some_boring_data.txt"
   done
 
-  TARGET_DIRS[go_to_subdir2]="data_$(shuf -i 100-999 -n 1)/docs/archive"
+  TARGET_DIRS[go_to_subdir2]="data_$(($RANDOM % 899 + 100))/docs/archive"
   mkdir -p "${TARGET_DIRS[go_to_subdir2]}"
   mkdir -p "${TARGET_DIRS[go_to_subdir2]}"
 }
@@ -724,7 +724,7 @@ check_go_to_subdir2() {
 # ============================================
 # shellcheck disable=SC2329
 setup_to_parents() {
-  TARGET_DIRS[to_parents]="data_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[to_parents]="data_$(($RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[to_parents]}/docs/archive/subarchive"
   cd "${TARGET_DIRS[to_parents]}/docs/archive/subarchive" || exit
 }
@@ -744,7 +744,7 @@ check_to_parents() {
 # ============================================
 # shellcheck disable=SC2329
 setup_return_home() {
-  TARGET_DIRS[return_home]="data_$(shuf -i 100-999 -n 1)/docs/subarchive/some/shady/deeply/nested/directory"
+  TARGET_DIRS[return_home]="data_$(($RANDOM % 899 + 100))/docs/subarchive/some/shady/deeply/nested/directory"
   mkdir -p "${TARGET_DIRS[return_home]}"
   cd "${TARGET_DIRS[return_home]}" || exit
 }
@@ -919,7 +919,7 @@ check_view_file_content() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_empty_file() {
-  TARGET_FILES[create_empty_file]="report_$(shuf -i 100-999 -n 1).txt"
+  TARGET_FILES[create_empty_file]="report_$(($RANDOM % 899 + 100)).txt"
 }
 
 # shellcheck disable=SC2329
@@ -971,7 +971,7 @@ check_create_file_with_text() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_dir() {
-  TARGET_DIRS[create_dir]="project_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[create_dir]="project_$(($RANDOM % 899 + 100))"
 }
 
 # shellcheck disable=SC2329
@@ -993,7 +993,7 @@ check_create_dir() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_nested_dirs() {
-  TARGET_DIRS[create_nested_dirs]="project_$(shuf -i 100-999 -n 1)/tests/integration"
+  TARGET_DIRS[create_nested_dirs]="project_$(($RANDOM % 899 + 100))/tests/integration"
 }
 
 # shellcheck disable=SC2329
@@ -1015,7 +1015,7 @@ check_create_nested_dirs() {
 # ============================================
 # shellcheck disable=SC2329
 setup_remove_file() {
-  TARGET_DIRS[remove_file]="project_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[remove_file]="project_$(($RANDOM % 899 + 100))"
   TARGET_FILES[remove_file]="notes.txt"
   mkdir -p "${TARGET_DIRS[remove_file]}"
   echo "These are some notes..." >"${TARGET_DIRS[remove_file]}/${TARGET_FILES[remove_file]}"
@@ -1040,7 +1040,7 @@ check_remove_file() {
 # ============================================
 # shellcheck disable=SC2329
 setup_remove_recursively() {
-  TARGET_DIRS[remove_recursively]="old_project_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[remove_recursively]="old_project_$(($RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[remove_recursively]}/docs"
   echo "Some old documentation..." >"${TARGET_DIRS[remove_recursively]}/docs/readme.txt"
 }
@@ -1065,7 +1065,7 @@ check_remove_recursively() {
 
 # shellcheck disable=SC2329
 setup_copy_file() {
-  TARGET_DIRS[copy_file]="project_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[copy_file]="project_$(($RANDOM % 899 + 100))"
   TARGET_FILES[copy_file_source]="report.txt"
   TARGET_FILES[copy_file_dest]="report_backup.txt"
   mkdir -p "${TARGET_DIRS[copy_file]}"
@@ -1102,7 +1102,7 @@ check_copy_file() {
 # ============================================
 # shellcheck disable=SC2329
 setup_make_executable() {
-  TARGET_DIRS[make_executable]="secure_vault_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[make_executable]="secure_vault_$(($RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[make_executable]}"
   TARGET_FILES[make_executable]="${TARGET_DIRS[make_executable]}/locked.txt"
   touch "${TARGET_FILES[make_executable]}"
@@ -1125,7 +1125,7 @@ check_make_executable() {
 # ============================================
 # shellcheck disable=SC2329
 setup_set_owner_permissions() {
-  TARGET_DIRS[set_owner_permissions]="secure_vault_$(shuf -i 100-999 -n 1)"
+  TARGET_DIRS[set_owner_permissions]="secure_vault_$(($RANDOM % 899 + 100))"
   mkdir -p "${TARGET_DIRS[set_owner_permissions]}"
   TARGET_FILES[set_owner_permissions]="${TARGET_DIRS[set_owner_permissions]}/secret.sh"
   touch "${TARGET_FILES[set_owner_permissions]}"
@@ -1151,7 +1151,7 @@ check_set_owner_permissions() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_and_run_simple() {
-  TARGET_SCRIPTS[create_and_run_simple]="myscript_$(shuf -i 100-999 -n 1).sh"
+  TARGET_SCRIPTS[create_and_run_simple]="myscript_$(($RANDOM % 899 + 100)).sh"
 }
 
 # shellcheck disable=SC2329
@@ -1170,7 +1170,7 @@ check_create_and_run_simple() {
 # ============================================
 # shellcheck disable=SC2329
 setup_create_and_run_ls() {
-  TARGET_SCRIPTS[create_and_run_ls]="list_files_$(shuf -i 100-999 -n 1).sh"
+  TARGET_SCRIPTS[create_and_run_ls]="list_files_$(($RANDOM % 899 + 100)).sh"
 }
 
 # shellcheck disable=SC2329
