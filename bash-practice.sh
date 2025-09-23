@@ -475,8 +475,6 @@ check_current_task() {
     local total
     total=$(get_task_count_for_task "$CURRENT_SKILL_ID")
     if [[ $((CURRENT_TASK_INDEX + 1)) -lt "$total" ]]; then
-      # prepare next task
-      cd "$GAME_DIR" || exit
       echo "You may now enter the command 'next' to continue to the next task."
     else
       echo "This was the final task for '${SKILLS[$((CURRENT_SKILL_ID - 1))]}'!"
