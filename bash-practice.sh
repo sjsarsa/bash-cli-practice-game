@@ -1459,11 +1459,18 @@ while true; do
 
       # Execute the command
 
+
       # If not a known interactive command such as less or redirection, capture stdout and stderr, stripping bash line info from errors
       if [[ "$command" =~ ^(pager|less|nano|vi|vim|top|htop|man|>)([[:space:]].*|$) ]]; then
         eval "$command"
         LATEST_COMMAND_OUTPUT=""
       else
+
+        # Fix for cat etc with only a single word command (no args) that would wait for stdin forever
+        if [[ "$command" =~ ^(cat|head|tail|more|wc|grep|sort|uniq|cut|awk|sed)([[:space:]].*|$) && ! "$command" =~ [[:space:]]+.+ ]]; then
+          echo "Warning: The command '$command' without arguments would wait for input forever (in non-game mode, you would need to use Ctrl+C to cancel the operation). Please try again with arguments (e.g. a filename)"
+          continue
+        fi
         tmp_output_file=$(mktemp)
         eval "$command" 2> >(sed -E "s|$0:\sline\s[0-9]+:\s||") >"$tmp_output_file"
         LATEST_COMMAND_OUTPUT=$(<"$tmp_output_file")
