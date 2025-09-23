@@ -180,7 +180,7 @@ mark_task_completed() {
   local task_id=$1 sub_idx=$2 sub_name
   sub_name=$(get_current_task_name "$task_id" $((sub_idx - 1)))
   # Replace the specific task header line: [ ] -> [✔]
-  sed -i "s|#   TASK ${sub_idx}: ${sub_name} \[ \]|#   TASK ${sub_idx}: ${sub_name} [✔]|" "$SCRIPT_ABS_PATH"
+  sed -i='' "s|#   TASK ${sub_idx}: ${sub_name} \[ \]|#   TASK ${sub_idx}: ${sub_name} [✔]|" "$SCRIPT_ABS_PATH"
 }
 
 show_progress() {
