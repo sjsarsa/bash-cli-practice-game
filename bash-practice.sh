@@ -150,19 +150,37 @@ is_task_completed() {
   return 0
 }
 
+realpath_m() {
+  local path=$1
+  case $path in
+    /*) ;;  # already absolute
+    *) path="$PWD/$path" ;;
+  esac
+
+  # simplify /./ and /../ lexically
+  local old=
+  while [ "$old" != "$path" ]; do
+    old=$path
+    path=${path//\/.\//\/}        # remove /./
+    path=${path%/./}              # handle trailing /.
+    path=$(printf "%s\n" "$path" | sed -E ':a; s#/[^/]+/\.\./#/#; ta')  # collapse /../
+  done
+  echo "$path"
+}
+
 # Utility to check if any path arguments in a command are outside the allowed base directory
 outside_paths() {
   local base_dir="$1" # The "allowed" parent directory
   shift               # Remaining arguments are the command + args
 
   # Canonicalize base_dir
-  base_dir="$(realpath -m "$base_dir")"
+  base_dir="$(realpath_m "$base_dir")"
 
   for arg in "$@"; do
     # Detect arguments that look like paths (absolute or relative)
     if [[ "$arg" == /* || "$arg" == .* || "$arg" == */* ]]; then
       # Try to resolve the argument into a canonical absolute path
-      if realpath_arg=$(realpath -m "$arg" 2>/dev/null); then
+      if realpath_arg=$(realpath_m "$arg" 2>/dev/null); then
         # Check if it is under the allowed base_dir
         case "$realpath_arg" in
         "$base_dir"/*) ;; # OK (inside base_dir)
