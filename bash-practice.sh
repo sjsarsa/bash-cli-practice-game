@@ -1095,7 +1095,7 @@ setup_copy_file() {
   COPY_FILE_SOURCE="report.txt"
   TARGET_FILES[copy_file_dest]="report_backup.txt"
   mkdir -p "${TARGET_DIRS[copy_file]}"
-  echo "This is a report, yes." >"${TARGET_DIRS[copy_file]}/${TARGET_FILES[copy_file_source]}"
+  echo "This is a report, yes." >"${TARGET_DIRS[copy_file]}/$COPY_FILE_SOURCE"
 }
 
 # shellcheck disable=SC2329
@@ -1114,9 +1114,9 @@ Tip: Use the 'cp' command." | fold -s -w "$PRINT_WIDTH"
 # shellcheck disable=SC2329
 check_copy_file() {
   local expected_dir="$GAME_DIR/${TARGET_DIRS[copy_file]}"
-  local source_path="$expected_dir/${TARGET_FILES[copy_file_source]}"
+  local source_path="$expected_dir/$COPY_FILE_SOURCE"
   local dest_path="$expected_dir/${TARGET_FILES[copy_file_dest]}"
-  [[ -f "$source_path" && -f "$dest_path" ]] && diff "$source_path" "$dest_path" >/dev/null && [[ "$(history | tail -n 1)" =~ ls ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"${TARGET_FILES[copy_file_source]}"* && ${LATEST_COMMAND_OUTPUT} == *"${TARGET_FILES[copy_file_dest]}"* ]]
+  [[ -f "$source_path" && -f "$dest_path" ]] && diff "$source_path" "$dest_path" >/dev/null && [[ "$(history | tail -n 1)" =~ ls ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"$COPY_FILE_SOURCE"* && ${LATEST_COMMAND_OUTPUT} == *"${TARGET_FILES[copy_file_dest]}"* ]]
 }
 
 ##############################################
