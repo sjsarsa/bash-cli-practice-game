@@ -403,15 +403,22 @@ Special directory names:
 
     prompt_enter_or_q || return
 
-  echo -e "  - ${yellow_bold}find${reset} (Find): Searches for files and directories in a directory hierarchy.
-      • Use ${cyan}find . -name 'filename'${reset} to search for a file named 'filename' starting from the current directory (${cyan}.${reset}).
-      • You can use wildcards, e.g., ${cyan}find . -name '*.txt'${reset} to find all text files.
+    local find_command
+    find_command="find -name"
+    if [[ "$(uname)" == "Darwin" ]]; then
+      find_command="find . -name"
+    fi
 
-  - ${yellow_bold}tree${reset} (tree.com in Windows): Displays the directory structure in a tree-like format.
+  echo -e "  - ${yellow_bold}find [path]${reset} (Find): Searches for files and directories in a directory hierarchy.
+      • Use ${cyan}$find_command 'filename'${reset} to search for a file named 'filename' starting from the current directory (${cyan}.${reset}).
+      • You can use wildcards in the name pattern, e.g., ${cyan}$find_command '*.txt'${reset} to find all text files.
+      • Use ${cyan}find dirname -name 'test_*'${reset} to find files starting with 'test_' in the directory 'dirname' and its subdirectories.
+
+      - ${yellow_bold}tree${reset} (tree.com in Windows): Displays the directory structure in a tree-like format (such as the one in the start of this info section).
       • Great for getting a full overview.
       • ${dim}NOTE: This command may not be installed by default on all systems.${reset}
           - On Ubuntu/Debian: ${cyan}sudo apt install tree${reset}
-          - On MacOS: ${cyan}brew install tree${reset}
+          - On MacOS: ${cyan}brew install tree (if brew is not installed, see https://brew.sh/) ${reset}
           - On Windows Git Bash: not available, instead use ${cyan}tree.com //f${reset}
             (${cyan}//f${reset} parameter is used to show files in the tree view).
   " | fold -s -w "$PRINT_WIDTH"
@@ -790,7 +797,7 @@ Tip: Use 'find -name <filename>' to locate it. " | fold -s -w "$PRINT_WIDTH"
 
   # MacOS find quirk note
   if [[ "$(uname)" == "Darwin" ]]; then
-    echo -e "${bold}Note for MacOS users:${reset} ${dim}The default 'find' command on MacOS is slightly different from GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${reset}"
+    echo -e "${bold}Note for MacOS users:${reset} ${dim}The default 'find' command on MacOS is slightly different from the more common GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${reset}"
   fi
 }
 
@@ -1011,16 +1018,22 @@ setup_create_nested_dirs() {
 
 # shellcheck disable=SC2329
 explain_create_nested_dirs() {
+  local find_command
+  find_command="find"
+  if [[ "$(uname)" == "Darwin" ]]; then
+    find_command="find ."
+  fi
+
   echo "Create a new directory '${TARGET_DIRS[create_nested_dirs]}'
 
-After this is done, verify it exists with 'find -name integration' or by cd:ing into the directory.
+After this is done, verify it exists with '$find_command -name integration' or by cd:ing into the directory.
 
-Tip: You can create multiple nested directories in one command with the '-p' option of 'mkdir': 'mkdir -p <path>'." | fold -s -w "$PRINT_WIDTH"
+Tip: You can create multiple nested directories in one command with the '-p' option of 'mkdir': 'mkdir -p <path>' ('mkdir <path> -p' works as well)" | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
 check_create_nested_dirs() {
-  [[ -d "$GAME_DIR/${TARGET_DIRS[create_nested_dirs]}" ]] && { [[ "$(history | tail -n 1)" =~ find[[:space:]]+-name[[:space:]]+integration ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]; } || [[ "$(basename "$PWD")" == "integration" ]];
+  [[ -d "$GAME_DIR/${TARGET_DIRS[create_nested_dirs]}" ]] && { [[ "$(history | tail -n 1)" =~ find[[:space:]] ]] && [[ ${LATEST_COMMAND_OUTPUT} == *"integration"* ]]; } || [[ "$PWD" == "$GAME_DIR/${TARGET_DIRS[create_nested_dirs]}" ]]
 }
 
 # ============================================
