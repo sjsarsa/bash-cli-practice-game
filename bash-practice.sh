@@ -781,7 +781,7 @@ check_return_home() {
 # shellcheck disable=SC2329
 setup_find_file() {
   rm -rf "$GAME_DIR/haystack"
-  echo -n "Preparing a haystack of directories, please wait..."
+  echo -n "Preparing a haystack of directories, please wait... (this may take a while)"
   TARGET_DIRS[find_file]=$(make_haystack "$GAME_DIR/haystack")
 }
 
