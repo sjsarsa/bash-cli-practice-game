@@ -353,7 +353,7 @@ Importantly, the command and its options and arguments are separated by
 spaces. If we'd write 'ls-1', it would be interpreted as a single command
 name, which likely doesn't exist. Similarly, the command 'ls -1 .,..' would
 have a single argument '..,.'
-"
+" | fold -s -w "$PRINT_WIDTH"
     ;;
   "1")
     echo -e "
@@ -372,7 +372,7 @@ ${cyan}/
         ├── syslog
         └── auth.log${reset}
 
-We can move around and explore the file systems contents quickly using only a few command line commands."
+We can move around and explore the file systems contents quickly using only a few command line commands." | fold -s -w "$PRINT_WIDTH"
 
     prompt_enter_or_q || return
 
@@ -382,7 +382,7 @@ Special directory names:
   - The root of the filesystem is represented by a single forward slash (${cyan}/${reset}).
   - Your home directory is represented by a tilde (${cyan}~${reset}).
   - A single dot (${cyan}.${reset}) represents the current directory.
-  - A double dot (${cyan}..${reset}) represents the parent directory (one level up)."
+  - A double dot (${cyan}..${reset}) represents the parent directory (one level up)." | fold -s -w "$PRINT_WIDTH"
 
     prompt_enter_or_q || return
 
@@ -399,18 +399,21 @@ Special directory names:
         ${dim}(In this game, your home directory is the same as the game root)${reset}
       • ${cyan}cd ..${reset} moves you up one level.
       • ${cyan}cd ../..${reset} moves you up two levels.
-      • ${cyan}cd /${reset} takes you to the root directory.
+      • ${cyan}cd /${reset} takes you to the root directory." | fold -s -w "$PRINT_WIDTH"
 
-  - ${yellow_bold}find${reset} (Find): Searches for files and directories in a directory hierarchy.
+    prompt_enter_or_q || return
+
+  echo -e "  - ${yellow_bold}find${reset} (Find): Searches for files and directories in a directory hierarchy.
       • Use ${cyan}find . -name 'filename'${reset} to search for a file named 'filename' starting from the current directory (${cyan}.${reset}).
       • You can use wildcards, e.g., ${cyan}find . -name '*.txt'${reset} to find all text files.
+
   - ${yellow_bold}tree${reset} (tree.com in Windows): Displays the directory structure in a tree-like format.
       • Great for getting a full overview.
       • ${dim}NOTE: This command may not be installed by default on all systems.${reset}
           - On Ubuntu/Debian: ${cyan}sudo apt install tree${reset}
           - On MacOS: ${cyan}brew install tree${reset}
-          - On Windows Git Bash: not available, instead use Windows' ${cyan}tree.com //f${reset}
-            (${cyan}//f${reset} shows files in the tree view).
+          - On Windows Git Bash: not available, instead use ${cyan}tree.com //f${reset}
+            (${cyan}//f${reset} parameter is used to show files in the tree view).
   " | fold -s -w "$PRINT_WIDTH"
     ;;
   "2") echo -e "
@@ -435,9 +438,10 @@ The command line lets you create, view, copy, move, and delete files or director
       • Example: ${cyan}mkdir projects${reset}
 
   - ${yellow_bold}echo 'text' > [file]${reset}: Writes text into a file. If the file exists, its contents are overwritten.
-      • Example: ${cyan}echo 'Hello World' > hello.txt${reset}
-      • Use ${cyan}>>${reset} instead of ${cyan}>${reset} to append without overwriting.
-  - ${yellow_bold}cp [src] [dest]${reset} (Copy): Duplicates files or directories.
+      • Example: ${cyan}echo 'Hello World' > hello.txt${reset}.  Note that the quotation marks are required for text with spaces or any other special character in bash.
+      • Use ${cyan}>>${reset} instead of ${cyan}>${reset} to append without overwriting." | fold -s -w "$PRINT_WIDTH"
+    prompt_enter_or_q || return
+    echo -e " - ${yellow_bold}cp [src] [dest]${reset} (Copy): Duplicates files or directories.
       • Example (file): ${cyan}cp file.txt backup.txt${reset}
       • Example (directory): ${cyan}cp -r src_dir backup_dir${reset}
         ${dim}(The ${cyan}-r${reset} option copies directories recursively)${reset}
