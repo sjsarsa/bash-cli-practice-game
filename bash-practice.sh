@@ -1092,7 +1092,7 @@ check_remove_recursively() {
 # shellcheck disable=SC2329
 setup_copy_file() {
   TARGET_DIRS[copy_file]="project_$(($RANDOM % 899 + 100))"
-  TARGET_FILES[copy_file_source]="report.txt"
+  COPY_FILE_SOURCE="report.txt"
   TARGET_FILES[copy_file_dest]="report_backup.txt"
   mkdir -p "${TARGET_DIRS[copy_file]}"
   echo "This is a report, yes." >"${TARGET_DIRS[copy_file]}/${TARGET_FILES[copy_file_source]}"
@@ -1101,9 +1101,9 @@ setup_copy_file() {
 # shellcheck disable=SC2329
 explain_copy_file() {
   echo "
-The directory '${TARGET_DIRS[copy_file]}' contains a file named '${TARGET_FILES[copy_file_source]}' with the contents: This is a report, yes.
+The directory '${TARGET_DIRS[copy_file]}' contains a file named '$COPY_FILE_SOURCE' with the contents: This is a report, yes.
 
-Create a copy of the file '${TARGET_FILES[copy_file_source]}' in '${TARGET_FILES[copy_file_dest]}' inside the same directory ('${TARGET_DIRS[copy_file]}').
+Create a copy of the file '$COPY_FILE_SOURCE' to a file '${TARGET_FILES[copy_file_dest]}' inside the same directory ('${TARGET_DIRS[copy_file]}').
 
 Once done, verify that you see both of the files with 'ls'.
 If you want to be extra sure, you can check the contents of both files with 'cat'.
