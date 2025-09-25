@@ -444,9 +444,10 @@ The command line lets you create, view, copy, move, and delete files or director
   - ${yellow_bold}mkdir [dir]${reset} (Make Directory): Creates a new, empty folder.
       • Example: ${cyan}mkdir projects${reset}
 
-  - ${yellow_bold}echo 'text' > [file]${reset}: Writes text into a file. If the file exists, its contents are overwritten.
+  - ${yellow_bold}echo 'text' > [file]${reset}: Writes text into a file.
       • Example: ${cyan}echo 'Hello World' > hello.txt${reset}.  Note that the quotation marks are required for text with spaces or any other special character in bash.
-      • Use ${cyan}>>${reset} instead of ${cyan}>${reset} to append without overwriting." | fold -s -w "$PRINT_WIDTH"
+        ${red}Warning:${reset} ${dim}If the file exists, its contents are overwritten without warning.${reset}
+      • Use ${cyan}>>${reset} instead of ${cyan}>${reset} to append content instead of rewriting." | fold -s -w "$PRINT_WIDTH"
     prompt_enter_or_q || return
     echo -e " - ${yellow_bold}cp [src] [dest]${reset} (Copy): Duplicates files or directories.
       • Example (file): ${cyan}cp file.txt backup.txt${reset}
