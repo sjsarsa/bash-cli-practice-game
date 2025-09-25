@@ -781,8 +781,8 @@ check_return_home() {
 # shellcheck disable=SC2329
 setup_find_file() {
   rm -rf "$GAME_DIR/haystack"
-  echo -n "Preparing a haystack of directories, please wait... (this may take a while)"
-  TARGET_DIRS[find_file]=$(make_haystack "$GAME_DIR/haystack")
+  echo "Preparing a haystack of directories, please wait... (this may take a while)"
+  TARGET_DIRS[find_file]=$(make_haystack "$GAME_DIR/haystack") | fold -s -w "$PRINT_WIDTH"
 }
 
 # shellcheck disable=SC2329
@@ -797,7 +797,7 @@ Tip: Use 'find -name <filename>' to locate it. " | fold -s -w "$PRINT_WIDTH"
 
   # MacOS find quirk note
   if [[ "$(uname)" == "Darwin" ]]; then
-    echo -e "${bold}Note for MacOS users:${reset} ${dim}The default 'find' command on MacOS is slightly different from the more common GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${reset}"
+    echo -e "${bold}Note for MacOS users:${reset} ${dim}The default 'find' command on MacOS is slightly different from the more common GNU find. Use 'find . -name needle.txt' (with a dot) to search from the current directory.${reset}" | fold -s -w "$PRINT_WIDTH"
   fi
 }
 
