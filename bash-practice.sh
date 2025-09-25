@@ -830,7 +830,15 @@ For example: cat file1.txt file2.txt
 It is also the standard way to view the full contents of a file in the terminal.
 
 Bonus:
-  'less' is a pager program that allows you to view (but not change) the contents of a file one screen at a time. It is often much more convenient than cat for long files.
+  'less' is a pager program that allows you to view (but not change) the
+  contents of a file one screen at a time. It is often much more convenient than
+  cat for long files.
+
+  Once inside 'less', you can move around for example with
+  j/k, page up/page down, or space/shift-space.
+  To exit 'less', press 'q' (for quit).
+  To see a summary of less commands, press 'h' (for help).
+
   Try 'less many-cats.txt' to see it in action.
 " >"${TARGET_FILES[view_file_content]}"
 
