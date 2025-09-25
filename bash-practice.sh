@@ -1489,7 +1489,7 @@ while true; do
 
 
       # If not a known interactive command such as less or redirection, capture stdout and stderr, stripping bash line info from errors
-      if [[ "$command" =~ ^(pager|less|nano|vi|vim|top|htop|man|>)([[:space:]].*|$) ]]; then
+      if [[ "$command" =~ ^(pager|less|nano|vi|vim|vimtutor|top|htop|man|>)([[:space:]].*|$) ]]; then
         eval "$command"
         LATEST_COMMAND_OUTPUT=""
       else
