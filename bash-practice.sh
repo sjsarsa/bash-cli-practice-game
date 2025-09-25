@@ -983,9 +983,11 @@ ${RANDOM_TASK_OPTIONS[create_file_with_text]}
 Once the file is created, verify that the file contains the correct text with 'cat'.
 
 Tip: Use one of:
-  - (1) echo with redirection ('> filename')
+  - (1) echo with redirection (see 'info' for details)
   - (2) start a command line text editor with the filename as an argument, e.g. 'nano filename' or 'vim filename'
-  - (3) create an empty file and open it with the system's default text editor ('open filename' on Linux/Mac, 'start filename' on Windows) — may not be available in all environments (e.g. servers).
+    - nano is usually easier for beginners
+    - vim is more powerful but has a steeper learning curve — try 'vimtutor' to get started (or ':help' once inside vim)
+  - (3) create an empty file and open it with the system's default text editor ('open filename' on Linux/Mac, 'start filename' on Windows)
     " | fold -s -w "$PRINT_WIDTH"
 }
 
